@@ -7,7 +7,7 @@ export interface Segment {
   speed: number
 }
 
-type TrimCutSpeed = Pick<EditorState, 'trim' | 'cuts' | 'speedRamps'>
+type TrimCutSpeed = Pick<EditorState, 'trim' | 'cuts' | 'speedRamps'> & { splits?: number[] }
 
 /** Sorts ranges and merges any that overlap or touch. */
 export const mergeRanges = (ranges: TimeRange[]): TimeRange[] => {
@@ -47,15 +47,28 @@ export const buildSegments = (durationMs: number, editor: TrimCutSpeed): Segment
   }
   if (cursor < trimEnd) kept.push({ start: cursor, end: trimEnd })
 
+  // Splits divide kept ranges into clips. They do not change the output.
+  const splits = [...(editor.splits ?? [])].sort((a, b) => a - b)
+  const clips: TimeRange[] = []
+  for (const range of kept) {
+    let from = range.start
+    for (const split of splits) {
+      if (split <= from || split >= range.end) continue
+      clips.push({ start: from, end: split })
+      from = split
+    }
+    clips.push({ start: from, end: range.end })
+  }
+
   const ramps = [...editor.speedRamps].sort((a, b) => a.start - b.start)
   const segments: Segment[] = []
 
-  for (const piece of kept) {
-    let position = piece.start
+  for (const clip of clips) {
+    let position = clip.start
 
     for (const ramp of ramps) {
       const from = Math.max(ramp.start, position)
-      const to = Math.min(ramp.end, piece.end)
+      const to = Math.min(ramp.end, clip.end)
       if (to <= from) continue
 
       if (from > position) segments.push({ start: position, end: from, speed: 1 })
@@ -63,7 +76,7 @@ export const buildSegments = (durationMs: number, editor: TrimCutSpeed): Segment
       position = to
     }
 
-    if (position < piece.end) segments.push({ start: position, end: piece.end, speed: 1 })
+    if (position < clip.end) segments.push({ start: position, end: clip.end, speed: 1 })
   }
 
   return segments

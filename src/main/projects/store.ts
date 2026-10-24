@@ -53,7 +53,11 @@ const hasThumbnail = async (dir: string): Promise<boolean> => {
 export const readProject = async (root: string, key: string): Promise<ProjectFile> => {
   const dir = projectDir(root, key)
   const raw = await readFile(join(dir, PROJECT_FILE_NAME), 'utf8')
-  return parseProject(JSON.parse(raw), () => randomUUID())
+  const parsed = JSON.parse(raw) as { name?: unknown }
+  const project = parseProject(parsed, () => randomUUID())
+  // Projects without a name (older recordings) are named after their folder.
+  const hasName = typeof parsed.name === 'string' && parsed.name.trim().length > 0
+  return hasName ? project : { ...project, name: key }
 }
 
 const writeProject = async (root: string, key: string, project: ProjectFile): Promise<void> => {

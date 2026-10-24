@@ -39,8 +39,10 @@ export type FaceCamAnchor = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-r
 export interface EditorState {
   /** Source range kept after trimming. `null` keeps the whole recording. */
   trim: TimeRange | null
-  /** Source ranges removed by split and delete. */
+  /** Source ranges removed by delete. */
   cuts: TimeRange[]
+  /** Split points in source ms. They separate clips without changing the output. */
+  splits: number[]
   speedRamps: SpeedRamp[]
   zoom: {
     auto: boolean
@@ -105,6 +107,7 @@ export interface ProjectFile {
   status: 'recording' | 'completed' | 'incomplete' | 'error'
   target: CaptureTarget
   options: RecorderOptions
+  captureBounds: { x: number; y: number; width: number; height: number } | null
   timing: {
     /** Unix epoch in ms when the session began. */
     epoch: number
@@ -123,6 +126,7 @@ export interface ProjectFile {
 export const createDefaultEditor = (): EditorState => ({
   trim: null,
   cuts: [],
+  splits: [],
   speedRamps: [],
   zoom: { auto: true, sensitivity: 0.5, level: 1.6, segments: [] },
   cursor: { visible: true, size: 1.4, smoothing: 0.5, clickRipples: true, highlight: false },
@@ -242,6 +246,9 @@ export const normalizeEditor = (input: unknown): EditorState => {
   return {
     trim,
     cuts: list(input.cuts, readRange),
+    splits: list(input.splits, (item) =>
+      typeof item === 'number' && Number.isFinite(item) && item >= 0 ? item : null
+    ),
     speedRamps: list(input.speedRamps, readSpeedRamp),
     zoom: {
       auto: bool(zoom.auto, base.zoom.auto),
@@ -284,6 +291,16 @@ export const normalizeEditor = (input: unknown): EditorState => {
       fadeOutMs: num(audio.fadeOutMs, 0, 10_000, base.audio.fadeOutMs)
     }
   }
+}
+
+const readBounds = (value: unknown): ProjectFile['captureBounds'] => {
+  if (!isRecord(value)) return null
+  const { x, y, width, height } = value
+  if ([x, y, width, height].some((item) => typeof item !== 'number' || !Number.isFinite(item))) {
+    return null
+  }
+  if ((width as number) <= 0 || (height as number) <= 0) return null
+  return { x: x as number, y: y as number, width: width as number, height: height as number }
 }
 
 /** Schema v1 was the recorder's first manifest: no id, name, or editor state. */
@@ -358,6 +375,7 @@ export const parseProject = (raw: unknown, newId: () => string): ProjectFile => 
       : { name: 'Ash Studio Recorder', version: '0.0.0' },
     status,
     target: target as unknown as ProjectFile['target'],
+    captureBounds: readBounds(migrated.captureBounds),
     options: (isRecord(migrated.options)
       ? migrated.options
       : {}) as unknown as ProjectFile['options'],
