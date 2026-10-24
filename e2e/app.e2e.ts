@@ -20,13 +20,25 @@ let app: ElectronApplication
 let page: Page
 let outputDir: string
 
+const mainWindow = async (electronApp: ElectronApplication): Promise<Page> => {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const window = electronApp.windows().find((item) => !item.url().includes('#toolbar'))
+    if (window) return window
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  throw new Error('The main window never appeared')
+}
+
 test.beforeAll(async () => {
   recordings = mkdtempSync(join(tmpdir(), 'ash-e2e-recordings-'))
   outputDir = mkdtempSync(join(tmpdir(), 'ash-e2e-out-'))
   makeFixture(recordings, PROJECT_NAME)
 
+  // ASH_E2E_APP points at a packaged build (for example release/mac-arm64/... .app)
+  // so the same suite can verify the shipped artifact, not just the dev output.
+  const packaged = process.env['ASH_E2E_APP']
   app = await electron.launch({
-    args: [join(REPO, 'out/main/index.js')],
+    ...(packaged ? { executablePath: packaged } : { args: [join(REPO, 'out/main/index.js')] }),
     cwd: REPO,
     env: { ...process.env, ASH_RECORDINGS_DIR: recordings, NODE_ENV: 'production' }
   })
@@ -37,7 +49,8 @@ test.beforeAll(async () => {
       Promise.resolve({ canceled: false, filePath: `${out}/export.mp4` })
   }, outputDir)
 
-  page = await app.firstWindow()
+  // The app also creates a hidden toolbar window, so pick the main window explicitly.
+  page = await mainWindow(app)
   await page.waitForLoadState('domcontentloaded')
 })
 
@@ -111,4 +124,13 @@ test('exports an MP4 with the chosen resolution', async () => {
   const probe = spawnSync(ffmpegPath, ['-i', output], { encoding: 'utf8' }).stderr
   expect(probe).toMatch(/Video: h264/)
   expect(probe).toMatch(/1280x720/)
+  await dialog.getByRole('button', { name: 'Close' }).click()
+})
+
+test('settings screen shows the recordings folder used by the tests', async () => {
+  // The editor has its own back button; the top-level tabs live on the library screen.
+  await page.getByRole('button', { name: '← Projects' }).click()
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+  await expect(page.getByText(recordings)).toBeVisible()
 })
