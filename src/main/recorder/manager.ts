@@ -1,6 +1,6 @@
 import { rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import { app, BrowserWindow, shell, systemPreferences } from 'electron'
+import { app, BrowserWindow, screen, shell, systemPreferences } from 'electron'
 import {
   IPC_EVENTS,
   type InputTrackingStatus,
@@ -71,6 +71,17 @@ interface Session {
 
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error)
+
+/** Display bounds for display captures. Window bounds are not available from desktopCapturer. */
+const resolveCaptureBounds = (
+  target: RecorderStartRequest['target']
+): RecordingManifest['captureBounds'] => {
+  if (target.kind !== 'screen' || !target.displayId) return null
+  const display = screen.getAllDisplays().find((item) => String(item.id) === target.displayId)
+  if (!display) return null
+  const { x, y, width, height } = display.bounds
+  return { x, y, width, height }
+}
 
 const shortcutWarning = (accelerator: string): string =>
   `${accelerator} is already used by another app, so that shortcut is unavailable.`
@@ -180,6 +191,7 @@ export class RecorderManager {
           pausedTotalMs: 0,
           clock: 'active'
         },
+        captureBounds: resolveCaptureBounds(request.target),
         mediaStartedAt: {},
         tracks: {},
         events: { fileName: EVENTS_FILE, count: 0 },

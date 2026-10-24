@@ -30,6 +30,11 @@ export interface RecordingManifest {
     /** Input events use active (unpaused) recording time. */
     clock: 'active'
   }
+  /**
+   * Global screen rectangle the capture covers, used to map cursor positions
+   * into the video. Null when unknown, such as for window captures.
+   */
+  captureBounds: { x: number; y: number; width: number; height: number } | null
   /** Absolute wall-clock time each MediaRecorder produced its first frame. */
   mediaStartedAt: Partial<Record<RecorderTrack, number>>
   tracks: Partial<Record<RecorderTrack, RecordingTrackInfo>>
