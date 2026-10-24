@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint, format, typecheck
+    name: Lint, format, typecheck, unit tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,3 +36,6 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
