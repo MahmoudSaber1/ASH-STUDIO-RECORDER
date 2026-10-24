@@ -16,7 +16,8 @@ The main process owns capture and disk I/O. The renderer owns preview only.
 4. **Audio** — microphone stream plus system audio where the platform supports it, each recorded independently.
 5. **Input events** — `uiohook-napi` runs in the main process and appends timestamped mouse, keyboard, and scroll events to `events.jsonl`.
 6. **Sync** — all timestamps are relative to a single capture epoch taken before the first frame. Video and event offsets are stored in the project manifest.
-7. **Crash safety** — media is written in time-sliced chunks and the event log is append-only, so an interrupted session still leaves a usable recording.
+7. **Crash safety** — media is written in time-sliced chunks to `.webm.part` files and only renamed to `.webm` when the session is finalized. The event log is append-only. On the next launch, any unfinished session is recovered: its `.part` files are promoted to `.webm`, its manifest is marked `incomplete`, and a note explains what happened.
+8. **Stop and save** — the capture window hands back its last chunks after stop. If it never does (closed, reloaded, or crashed), the main process saves what it already has after a short grace period, so a session never stays stuck in "stopping". Closing the recorder window during a session hides it instead, and quitting waits for the save to finish.
 
 The system cursor is hidden in the captured video. The cursor you see in the editor and export is drawn from event data, which is what makes size, style, smoothing, and click ripples editable.
 
@@ -27,10 +28,10 @@ My Recording/
 ├── project.json      # schema version, editor settings, media references, offsets
 ├── screen.webm       # raw screen capture
 ├── webcam.webm       # raw camera capture (optional)
-├── mic.webm          # microphone (optional)
-├── system.webm       # system audio (optional)
+├── microphone.webm   # microphone (optional)
+├── system-audio.webm # system audio, Windows only (optional)
 ├── events.jsonl      # append-only input event log
-└── thumbnails/       # cached previews
+└── (thumbnails/)     # planned: cached previews, not written yet
 ```
 
 ## Editing pipeline (Phases 4–8)

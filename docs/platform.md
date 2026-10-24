@@ -86,11 +86,18 @@ The preload bridge exposes no raw `ipcRenderer`, no Node APIs, and no arbitrary 
 
 ## Input hooks
 
-Phase 2 adds `uiohook-napi` to the main process. The capability flag `supportsGlobalInputHooks` and the macOS Accessibility permission are already in place. Hook events will be normalised in main and streamed to the renderer with timestamps relative to the capture epoch; they are not exposed through this phase's IPC contract yet.
+`uiohook-napi` runs in the main process. Hook events are normalised in main and written to `events.jsonl` with timestamps relative to the capture epoch. The renderer never receives raw input.
+
+- Mouse moves are throttled to about 60 Hz. Keyboard hooks are attached only when keystroke logging is enabled.
+- On macOS, the recorder checks Accessibility before starting. If it is off, the session runs without cursor data and shows a warning.
+
+## Source list filtering
+
+`getSources` drops windows that cannot be recorded usefully: unnamed windows, the Windows shell and macOS system surfaces, this app's own window, and windows with no thumbnail (usually minimized or hidden). Displays are labelled with their index and physical resolution, for example `Display 1 · 2560×1440 (main)`.
 
 ## Known limitations
 
 - macOS requires a restart after screen recording or accessibility is granted.
 - Development builds are unsigned, so moving the app bundle can reset TCC grants. Re-add the app in System Settings if permissions appear granted but capture fails.
-- Windows window enumeration includes hidden and untitled windows; filtering belongs to the Phase 2 source picker.
+- Linux screen capture depends on the compositor and portal implementation.
 - Linux screen capture depends on the compositor and portal implementation.

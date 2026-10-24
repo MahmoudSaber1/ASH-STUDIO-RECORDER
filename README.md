@@ -2,7 +2,7 @@
 
 An open-source, cross-platform screen recorder and editor for macOS and Windows — in the spirit of Screen Studio, built entirely with free and open tools.
 
-**Status: pre-alpha.** Phase 1 (platform layer and permission onboarding) is complete. The recorder itself lands in Phase 2.
+**Status: pre-alpha.** The platform layer, permission onboarding, and the raw recorder (Phases 0–2) are in place. Editing and the project library come next.
 
 ## The core idea
 
@@ -14,7 +14,7 @@ record                          edit                            export
 │ screen.webm          │        │                      │        │                      │
 │ webcam.webm          │  ───▶  │  project.json        │  ───▶  │  canvas frame        │
 │ audio tracks         │        │  + live canvas       │        │  → FFmpeg            │
-│ events.json          │        │  preview             │        │  → MP4 / GIF / WebM  │
+│ events.jsonl         │        │  preview             │        │  → MP4 / GIF / WebM  │
 └──────────────────────┘        └──────────────────────┘        └──────────────────────┘
 ```
 
