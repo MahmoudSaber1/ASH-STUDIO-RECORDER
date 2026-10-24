@@ -29,6 +29,13 @@ body {
   flex-direction: column;
 }
 
+.toolbar-window,
+.toolbar-window body,
+.toolbar-window #root {
+  background: transparent;
+  overflow: hidden;
+}
+
 ::selection {
   background: color-mix(in oklab, var(--color-accent) 45%, transparent);
 }

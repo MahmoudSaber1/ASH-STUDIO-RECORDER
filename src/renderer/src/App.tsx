@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Logo } from '@renderer/components/Logo'
-import { HomeScreen } from '@renderer/screens/HomeScreen'
+import { RecorderScreen } from '@renderer/screens/RecorderScreen'
 import { SetupScreen } from '@renderer/screens/SetupScreen'
 import { usePlatformStore } from '@renderer/stores/platform'
 
@@ -88,7 +88,7 @@ export default function App(): React.JSX.Element {
   }
 
   return (
-    <HomeScreen
+    <RecorderScreen
       onOpenSetup={() => {
         setView('setup')
       }}
