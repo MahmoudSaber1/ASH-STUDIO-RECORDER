@@ -1,4 +1,4 @@
-import { rm } from 'node:fs/promises'
+import { rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { app, BrowserWindow, shell, systemPreferences } from 'electron'
 import {
@@ -27,6 +27,7 @@ import { ChunkWriter } from './chunk-writer'
 import { EventsWriter } from './events-writer'
 import { InputTracker } from './input-tracker'
 import { ManifestWriter, type RecordingManifest, type RecordingTrackInfo } from './manifest'
+import { remuxInPlace } from '@main/media/remux'
 import { recoverInterruptedRecordings } from './recovery'
 import { createSessionDir, EVENTS_FILE, MANIFEST_FILE } from './paths'
 
@@ -444,9 +445,12 @@ export class RecorderManager {
       try {
         const finalized = await entry.writer.finalize()
         if (finalized) {
+          const path = join(session.dir, finalized.fileName)
+          // Add duration and an index so the editor can seek. Falls back silently.
+          await remuxInPlace(path)
           const info: RecordingTrackInfo = {
             fileName: finalized.fileName,
-            bytes: finalized.bytes,
+            bytes: (await stat(path)).size,
             startedAt: session.mediaStartedAt[track] ?? session.startedAt
           }
           session.manifest.data.tracks[track] = info

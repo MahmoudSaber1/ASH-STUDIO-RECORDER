@@ -16,6 +16,7 @@ import {
 } from '@shared/ipc'
 import { createPlatformService } from '@main/platform'
 import { recorderManager } from '@main/recorder/manager'
+import { registerProjectHandlers } from './projects'
 import { handleIpc } from './handle'
 
 const MAX_THUMBNAIL_DIMENSION = 1024
@@ -154,6 +155,8 @@ const normalizeRecorderRequest = (value: unknown): RecorderStartRequest => {
 }
 
 export function registerIpcHandlers(): void {
+  registerProjectHandlers()
+
   handleIpc(IPC_CHANNELS.appGetInfo, (): AppInfo => {
     return {
       name: app.getName(),

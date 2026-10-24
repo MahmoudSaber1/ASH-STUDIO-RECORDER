@@ -2,6 +2,7 @@ import { readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises
 import { join } from 'node:path'
 import type { RecorderTrack } from '@shared/ipc'
 import type { RecordingManifest } from './manifest'
+import { remuxInPlace } from '@main/media/remux'
 import { EVENTS_FILE, getRecordingsRoot, MANIFEST_FILE } from './paths'
 
 const PART_SUFFIX = '.webm.part'
@@ -78,10 +79,12 @@ async function recoverSessionDir(dir: string): Promise<boolean> {
     }
 
     const fileName = `${baseName}.webm`
-    await rename(partPath, join(dir, fileName))
+    const finalPath = join(dir, fileName)
+    await rename(partPath, finalPath)
+    await remuxInPlace(finalPath)
     manifest.tracks[track] = {
       fileName,
-      bytes: size,
+      bytes: (await stat(finalPath)).size,
       startedAt: manifest.mediaStartedAt[track] ?? manifest.timing.epoch
     }
   }

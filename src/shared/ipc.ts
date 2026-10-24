@@ -7,6 +7,7 @@ import type {
   PlatformCapabilities,
   Point
 } from './platform'
+import type { EditorState, ProjectFile, ProjectSummary } from './project'
 import type { RecorderStartRequest, RecorderState, RecorderTrack } from './recorder'
 
 export * from './app'
@@ -30,7 +31,18 @@ export const IPC_CHANNELS = {
   recorderStop: 'recorder:stop',
   recorderStopComplete: 'recorder:stop-complete',
   recorderGetState: 'recorder:get-state',
-  recorderOpenProjectFolder: 'recorder:open-project-folder'
+  recorderOpenProjectFolder: 'recorder:open-project-folder',
+  projectsList: 'projects:list',
+  projectGet: 'projects:get',
+  projectRename: 'projects:rename',
+  projectDuplicate: 'projects:duplicate',
+  projectDelete: 'projects:delete',
+  projectSaveEditor: 'projects:save-editor',
+  projectSaveThumbnail: 'projects:save-thumbnail',
+  projectGetThumbnail: 'projects:get-thumbnail',
+  projectImport: 'projects:import',
+  projectExport: 'projects:export',
+  projectReveal: 'projects:reveal'
 } as const
 
 export const IPC_EVENTS = {
@@ -73,6 +85,20 @@ export interface IpcContract {
   [IPC_CHANNELS.recorderStopComplete]: { args: []; result: RecorderState }
   [IPC_CHANNELS.recorderGetState]: { args: []; result: RecorderState }
   [IPC_CHANNELS.recorderOpenProjectFolder]: { args: []; result: boolean }
+  [IPC_CHANNELS.projectsList]: { args: []; result: ProjectSummary[] }
+  [IPC_CHANNELS.projectGet]: { args: [key: string]; result: ProjectFile }
+  [IPC_CHANNELS.projectRename]: { args: [key: string, name: string]; result: void }
+  [IPC_CHANNELS.projectDuplicate]: { args: [key: string]; result: string }
+  [IPC_CHANNELS.projectDelete]: { args: [key: string]; result: void }
+  [IPC_CHANNELS.projectSaveEditor]: {
+    args: [key: string, editor: EditorState]
+    result: EditorState
+  }
+  [IPC_CHANNELS.projectSaveThumbnail]: { args: [key: string, data: ArrayBuffer]; result: void }
+  [IPC_CHANNELS.projectGetThumbnail]: { args: [key: string]; result: string | null }
+  [IPC_CHANNELS.projectImport]: { args: []; result: string | null }
+  [IPC_CHANNELS.projectExport]: { args: [key: string]; result: string | null }
+  [IPC_CHANNELS.projectReveal]: { args: [key: string]; result: boolean }
 }
 
 /** Contract exposed to the renderer through the preload bridge. */
@@ -88,6 +114,19 @@ export interface StudioApi {
     getSources: (options?: CaptureSourcesOptions) => Promise<CaptureSource[]>
     listWindows: () => Promise<CaptureSource[]>
     getCursorPosition: () => Promise<Point>
+  }
+  projects: {
+    list: () => Promise<ProjectSummary[]>
+    get: (key: string) => Promise<ProjectFile>
+    rename: (key: string, name: string) => Promise<void>
+    duplicate: (key: string) => Promise<string>
+    remove: (key: string) => Promise<void>
+    saveEditor: (key: string, editor: EditorState) => Promise<EditorState>
+    saveThumbnail: (key: string, data: ArrayBuffer) => Promise<void>
+    getThumbnail: (key: string) => Promise<string | null>
+    import: () => Promise<string | null>
+    export: (key: string) => Promise<string | null>
+    reveal: (key: string) => Promise<boolean>
   }
   recorder: {
     start: (request: RecorderStartRequest) => Promise<RecorderState>

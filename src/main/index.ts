@@ -1,4 +1,6 @@
 import { app } from 'electron'
+import { installFileLogger } from '@main/logger'
+import { registerMediaProtocol, registerMediaScheme } from '@main/media/protocol'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { IPC_EVENTS } from '@shared/ipc'
 import { registerIpcHandlers } from '@main/ipc'
@@ -17,6 +19,9 @@ const QUIT_SAVE_TIMEOUT_MS = 10_000
 
 let quitAfterSave = false
 
+// Custom schemes must be declared before the app is ready.
+registerMediaScheme()
+
 const gotSingleInstanceLock = app.requestSingleInstanceLock()
 
 if (!gotSingleInstanceLock) {
@@ -32,6 +37,8 @@ if (!gotSingleInstanceLock) {
   })
 
   void app.whenReady().then(() => {
+    installFileLogger()
+    registerMediaProtocol()
     electronApp.setAppUserModelId('com.ashstudio.recorder')
 
     app.on('browser-window-created', (_, window) => {

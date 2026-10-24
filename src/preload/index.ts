@@ -23,6 +23,19 @@ const subscribe = <T>(channel: string, listener: (payload: T) => void): (() => v
 }
 
 const api: StudioApi = {
+  projects: {
+    list: () => invoke(IPC_CHANNELS.projectsList),
+    get: (key) => invoke(IPC_CHANNELS.projectGet, key),
+    rename: (key, name) => invoke(IPC_CHANNELS.projectRename, key, name),
+    duplicate: (key) => invoke(IPC_CHANNELS.projectDuplicate, key),
+    remove: (key) => invoke(IPC_CHANNELS.projectDelete, key),
+    saveEditor: (key, editor) => invoke(IPC_CHANNELS.projectSaveEditor, key, editor),
+    saveThumbnail: (key, data) => invoke(IPC_CHANNELS.projectSaveThumbnail, key, data),
+    getThumbnail: (key) => invoke(IPC_CHANNELS.projectGetThumbnail, key),
+    import: () => invoke(IPC_CHANNELS.projectImport),
+    export: (key) => invoke(IPC_CHANNELS.projectExport, key),
+    reveal: (key) => invoke(IPC_CHANNELS.projectReveal, key)
+  },
   app: {
     getInfo: () => invoke(IPC_CHANNELS.appGetInfo)
   },

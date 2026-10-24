@@ -1,5 +1,8 @@
 import type { CaptureTarget, RecorderOptions, RecorderTrack } from './recorder'
 
+/** File name of the project manifest inside each project folder. */
+export const PROJECT_FILE_NAME = 'project.json'
+
 /** Current on-disk schema. Bump it and add a step to `migrateProject` for every change. */
 export const PROJECT_SCHEMA_VERSION = 2
 
@@ -385,4 +388,18 @@ export const projectDurationMs = (project: ProjectFile): number => {
   const end = project.timing.endedAt ?? project.timing.epoch
   const active = Math.max(0, end - project.timing.epoch - project.timing.pausedTotalMs)
   return active
+}
+
+/** One row in the projects library. Errors are kept so broken projects still show up. */
+export interface ProjectSummary {
+  /** Folder name. Stable on disk and used as the identifier in IPC. */
+  key: string
+  id: string | null
+  name: string
+  createdAt: string | null
+  updatedAt: string | null
+  durationMs: number
+  status: ProjectFile['status'] | null
+  hasThumbnail: boolean
+  error: string | null
 }
