@@ -23,6 +23,12 @@ const subscribe = <T>(channel: string, listener: (payload: T) => void): (() => v
 }
 
 const api: StudioApi = {
+  exporter: {
+    start: (settings) => invoke(IPC_CHANNELS.exportStart, settings),
+    frame: (id, frame) => invoke(IPC_CHANNELS.exportFrame, id, frame),
+    finish: (id) => invoke(IPC_CHANNELS.exportFinish, id),
+    cancel: (id) => invoke(IPC_CHANNELS.exportCancel, id)
+  },
   projects: {
     list: () => invoke(IPC_CHANNELS.projectsList),
     get: (key) => invoke(IPC_CHANNELS.projectGet, key),

@@ -8,6 +8,7 @@ import type {
   Point
 } from './platform'
 import type { EditorState, ProjectFile, ProjectSummary } from './project'
+import type { ExportSettings } from './export'
 import type { RecorderStartRequest, RecorderState, RecorderTrack } from './recorder'
 
 export * from './app'
@@ -42,7 +43,11 @@ export const IPC_CHANNELS = {
   projectGetThumbnail: 'projects:get-thumbnail',
   projectImport: 'projects:import',
   projectExport: 'projects:export',
-  projectReveal: 'projects:reveal'
+  projectReveal: 'projects:reveal',
+  exportStart: 'export:start',
+  exportFrame: 'export:frame',
+  exportFinish: 'export:finish',
+  exportCancel: 'export:cancel'
 } as const
 
 export const IPC_EVENTS = {
@@ -99,6 +104,10 @@ export interface IpcContract {
   [IPC_CHANNELS.projectImport]: { args: []; result: string | null }
   [IPC_CHANNELS.projectExport]: { args: [key: string]; result: string | null }
   [IPC_CHANNELS.projectReveal]: { args: [key: string]; result: boolean }
+  [IPC_CHANNELS.exportStart]: { args: [settings: ExportSettings]; result: string | null }
+  [IPC_CHANNELS.exportFrame]: { args: [id: string, frame: ArrayBuffer]; result: void }
+  [IPC_CHANNELS.exportFinish]: { args: [id: string]; result: string }
+  [IPC_CHANNELS.exportCancel]: { args: [id: string]; result: void }
 }
 
 /** Contract exposed to the renderer through the preload bridge. */
@@ -114,6 +123,12 @@ export interface StudioApi {
     getSources: (options?: CaptureSourcesOptions) => Promise<CaptureSource[]>
     listWindows: () => Promise<CaptureSource[]>
     getCursorPosition: () => Promise<Point>
+  }
+  exporter: {
+    start: (settings: ExportSettings) => Promise<string | null>
+    frame: (id: string, frame: ArrayBuffer) => Promise<void>
+    finish: (id: string) => Promise<string>
+    cancel: (id: string) => Promise<void>
   }
   projects: {
     list: () => Promise<ProjectSummary[]>

@@ -16,6 +16,7 @@ import {
 } from '@shared/ipc'
 import { createPlatformService } from '@main/platform'
 import { recorderManager } from '@main/recorder/manager'
+import { registerExportHandlers } from './exporter'
 import { registerProjectHandlers } from './projects'
 import { handleIpc } from './handle'
 
@@ -156,6 +157,7 @@ const normalizeRecorderRequest = (value: unknown): RecorderStartRequest => {
 
 export function registerIpcHandlers(): void {
   registerProjectHandlers()
+  registerExportHandlers()
 
   handleIpc(IPC_CHANNELS.appGetInfo, (): AppInfo => {
     return {

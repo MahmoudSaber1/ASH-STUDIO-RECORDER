@@ -5,9 +5,13 @@ import { extname } from 'node:path'
 import { protocol } from 'electron'
 import { getRecordingsRoot } from '@main/recorder/paths'
 import { resolveMediaPath } from '@main/projects/store'
+import { MEDIA_SCHEME } from '@shared/media'
 
-/** Scheme used by the renderer to play project media. Host is fixed to `media`. */
-export const MEDIA_SCHEME = 'ash-media'
+/**
+ * Media is read back into a canvas for export, so it must be CORS-readable.
+ * The scheme only serves this app's own project files, so `*` is safe here.
+ */
+const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*' }
 
 const MIME_TYPES: Record<string, string> = {
   '.webm': 'video/webm',
@@ -17,16 +21,18 @@ const MIME_TYPES: Record<string, string> = {
   '.json': 'application/json'
 }
 
-/** Builds a media URL for one file of one project. */
-export const mediaUrl = (key: string, fileName: string): string =>
-  `${MEDIA_SCHEME}://media/${encodeURIComponent(key)}/${encodeURIComponent(fileName)}`
-
 /** Must run before the app is ready. */
 export const registerMediaScheme = (): void => {
   protocol.registerSchemesAsPrivileged([
     {
       scheme: MEDIA_SCHEME,
-      privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true }
+      privileges: {
+        standard: true,
+        secure: true,
+        supportFetchAPI: true,
+        stream: true,
+        corsEnabled: true
+      }
     }
   ])
 }
@@ -54,10 +60,10 @@ export const registerMediaProtocol = (): void => {
       .split('/')
       .slice(1)
       .map((part) => decodeURIComponent(part))
-    if (!key || !fileName) return new Response('Not found', { status: 404 })
+    if (!key || !fileName) return new Response('Not found', { status: 404, headers: CORS_HEADERS })
 
     const path = await resolveMediaPath(getRecordingsRoot(), key, fileName).catch(() => null)
-    if (!path) return new Response('Not found', { status: 404 })
+    if (!path) return new Response('Not found', { status: 404, headers: CORS_HEADERS })
 
     const { size } = await stat(path)
     const type = MIME_TYPES[extname(path).toLowerCase()] ?? 'application/octet-stream'
@@ -66,7 +72,10 @@ export const registerMediaProtocol = (): void => {
     if (rangeHeader) {
       const range = parseRange(rangeHeader, size)
       if (!range) {
-        return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } })
+        return new Response(null, {
+          status: 416,
+          headers: { ...CORS_HEADERS, 'Content-Range': `bytes */${size}` }
+        })
       }
 
       const stream = Readable.toWeb(
@@ -75,6 +84,7 @@ export const registerMediaProtocol = (): void => {
       return new Response(stream, {
         status: 206,
         headers: {
+          ...CORS_HEADERS,
           'Content-Type': type,
           'Content-Length': String(range.end - range.start + 1),
           'Content-Range': `bytes ${range.start}-${range.end}/${size}`,
@@ -86,6 +96,7 @@ export const registerMediaProtocol = (): void => {
     const stream = Readable.toWeb(createReadStream(path)) as ReadableStream
     return new Response(stream, {
       headers: {
+        ...CORS_HEADERS,
         'Content-Type': type,
         'Content-Length': String(size),
         'Accept-Ranges': 'bytes'
