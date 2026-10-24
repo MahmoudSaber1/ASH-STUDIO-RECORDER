@@ -2,7 +2,7 @@
 
 An open-source, cross-platform screen recorder and editor for macOS and Windows — in the spirit of Screen Studio, built entirely with free and open tools.
 
-**Status: pre-alpha.** The platform layer, permission onboarding, and the raw recorder (Phases 0–2) are in place. Editing and the project library come next.
+**Status: pre-alpha.** Recording, the project library, the editor and export all work end to end. Some items are still open. See [docs/roadmap.md](docs/roadmap.md).
 
 ## The core idea
 
@@ -77,52 +77,75 @@ npm run dev
 
 ### Scripts
 
-| Command                | Description                                     |
-| ---------------------- | ----------------------------------------------- |
-| `npm run dev`          | Start Electron with Vite HMR                    |
-| `npm run build`        | Typecheck and bundle main, preload, and renderer |
-| `npm start`            | Preview the production bundle                   |
-| `npm run typecheck`    | Typecheck the Node and web projects             |
-| `npm run lint`         | ESLint over the whole repo                      |
-| `npm run lint:fix`     | ESLint with autofix                             |
-| `npm run format`       | Prettier write                                  |
-| `npm run format:check` | Prettier check (used in CI)                     |
+| Command                | Description                                              |
+| ---------------------- | -------------------------------------------------------- |
+| `npm run dev`          | Start Electron with Vite HMR                             |
+| `npm run build`        | Typecheck and bundle main, preload, and renderer         |
+| `npm start`            | Preview the production bundle                            |
+| `npm test`             | Vitest unit and integration tests                        |
+| `npm run test:e2e`     | Playwright suite against the built app (run `build` first) |
+| `npm run dist:dir`     | Build an unpacked app for local checks                    |
+| `npm run dist`         | Build installers with electron-builder                    |
+| `npm run typecheck`    | Typecheck the Node and web projects                      |
+| `npm run lint`         | ESLint over the whole repo                               |
+| `npm run format:check` | Prettier check (used in CI)                              |
+
+Manual test steps for macOS and Windows are in [`docs/testing.md`](docs/testing.md).
+
+### Where your data lives
+
+Each recording is a folder: `project.json` (settings and editor state), the raw
+`.webm` tracks, `events.jsonl` (cursor and key events), and an optional
+`thumbnail.jpg`. By default folders go to `Videos/Ash Studio Recorder`. Change it
+in Settings. Warnings and errors are written to `main.log` in the app's logs folder.
+
+### Keyboard shortcuts
+
+| Shortcut              | Action                            |
+| --------------------- | --------------------------------- |
+| ⌘⇧R / Ctrl⇧R          | Start recording                   |
+| ⌘⇧P / Ctrl⇧P          | Pause or resume                   |
+| ⌘⇧S / Ctrl⇧S          | Stop recording                    |
+| Space                 | Play or pause in the editor       |
+| S                     | Split at the playhead             |
+| Delete / Backspace    | Remove the selected time          |
+| ⌘Z / ⇧⌘Z              | Undo and redo                     |
 
 ### Project structure
 
 ```
 src/
 ├── main/                     # Electron main process
-│   ├── index.ts              # Lifecycle, single instance lock
-│   ├── window.ts             # Main window and navigation guards
+│   ├── index.ts              # Lifecycle, single instance lock, quit-after-save
+│   ├── window.ts             # Main and toolbar windows, close guard
+│   ├── tray.ts               # Menu bar and notification area entry
+│   ├── settings.ts           # User preferences (recordings folder)
+│   ├── logger.ts             # Local main.log
 │   ├── ipc/                  # Typed IPC handlers and validation
+│   ├── media/                # ash-media protocol, FFmpeg remux and export
+│   ├── projects/store.ts     # Project library file operations
+│   ├── recorder/             # Capture manager, writers, recovery, input hooks
 │   └── platform/             # PlatformService implementations
-│       ├── base.ts           # Sources, cursor, shared helpers
-│       ├── darwin.ts         # macOS permissions and privacy panes
-│       ├── win32.ts          # Windows capabilities and settings links
-│       ├── linux.ts          # Best-effort fallback
-│       ├── service.ts        # PlatformService contract
-│       └── index.ts          # Platform selection
 ├── preload/                  # Context-isolated bridge exposed to the renderer
-│   ├── index.ts
-│   └── api.d.ts
-├── renderer/                 # React application
-│   ├── index.html
-│   └── src/
-│       ├── components/
-│       ├── lib/
-│       ├── screens/
-│       ├── stores/           # Zustand stores
-│       ├── App.tsx
-│       ├── main.tsx
-│       └── styles/
-└── shared/                   # Types and IPC contracts shared across processes
-    ├── app.ts
-    ├── ipc.ts
-    └── platform.ts
+├── renderer/src/
+│   ├── components/           # Shared UI, timeline, preview, inspector, export dialog
+│   ├── lib/                  # Frame renderer, media loader, exporter, thumbnails
+│   ├── screens/              # Record, library, editor, settings, setup
+│   └── stores/               # Zustand stores: editor, recorder, navigation, platform
+└── shared/                   # Pure logic and types used by every process
+    ├── project.ts            # Schema v2, migrations, editor defaults
+    ├── timeline.ts           # Trim, cuts, speed ramps, time mapping
+    ├── zoom.ts               # Click clusters, spring easing, camera
+    ├── cursor.ts             # Interpolation, smoothing, ripples
+    ├── editing.ts            # Editing commands
+    └── __tests__/            # Unit tests
+
+e2e/                          # Playwright suite and fixture generator
+docs/                         # Architecture, platform notes, testing, roadmap
+site/                         # Landing page source
 ```
 
-Path aliases: `@main/*`, `@renderer/*`, and `@shared/*`.
+Path aliases: `@main/*`, `@renderer/*`, `@shared/*`.
 
 ### Platform layer
 
@@ -132,25 +155,7 @@ Permission handling, deep links, and platform differences are documented in [`do
 
 ## Roadmap
 
-| Phase | Scope                                            | Status |
-| ----- | ------------------------------------------------ | ------ |
-| 0     | Project setup, tooling, CI                       | Done   |
-| 1     | Platform abstraction and permissions             | Done   |
-| 2     | Recorder MVP (capture, input events, raw files)  | Next   |
-| 3     | Project system and library                       |        |
-| 4     | Editor foundation and timeline                   |        |
-| 5     | Auto zoom and camera motion                      |        |
-| 6     | Cursor effects                                   |        |
-| 7     | Backgrounds and styling                          |        |
-| 8     | Face cam                                         |        |
-| 9     | Audio                                            |        |
-| 10    | Export pipeline                                  |        |
-| 11    | Performance and reliability                      |        |
-| 12    | UX polish                                        |        |
-| 13    | Testing                                          |        |
-| 14    | Packaging and release                            |        |
-| 15    | Open-source launch                               |        |
-| 16    | Post-launch ideas                                |        |
+Phase-by-phase status, including what is not done yet, is in [`docs/roadmap.md`](docs/roadmap.md).
 
 See [`docs/architecture.md`](docs/architecture.md) for the full design notes and known risks.
 
