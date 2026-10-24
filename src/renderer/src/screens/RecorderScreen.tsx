@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { CaptureSource, RecorderTrack } from '@shared/ipc'
 import { AppHeader } from '@renderer/components/AppHeader'
+import { NavTabs } from '@renderer/components/NavTabs'
+import { useNavigation } from '@renderer/stores/navigation'
 import { formatDuration } from '@renderer/lib/format'
 import { usePlatformStore } from '@renderer/stores/platform'
 import { useRecorderStore } from '@renderer/stores/recorder'
@@ -175,6 +177,8 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
   const stop = useRecorderStore((state) => state.stop)
   const reset = useRecorderStore((state) => state.reset)
   const openProjectFolder = useRecorderStore((state) => state.openProjectFolder)
+  const goTo = useNavigation((state) => state.go)
+  const projectKey = projectDir ? (projectDir.split(/[\\/]/).pop() ?? null) : null
 
   const permissions = usePlatformStore((state) => state.permissions)
   const capabilities = usePlatformStore((state) => state.capabilities)
@@ -211,6 +215,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
       />
 
       <AppHeader>
+        <NavTabs />
         <button
           type="button"
           onClick={onOpenSetup}
@@ -279,6 +284,17 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                     stay editable.
                   </p>
                   <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                    {projectKey ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          goTo({ name: 'editor', key: projectKey })
+                        }}
+                        className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                      >
+                        Open in editor
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => {

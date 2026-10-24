@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Logo } from '@renderer/components/Logo'
+import { EditorScreen } from '@renderer/screens/EditorScreen'
+import { LibraryScreen } from '@renderer/screens/LibraryScreen'
 import { RecorderScreen } from '@renderer/screens/RecorderScreen'
 import { SetupScreen } from '@renderer/screens/SetupScreen'
 import { usePlatformStore } from '@renderer/stores/platform'
+import { useNavigation } from '@renderer/stores/navigation'
 
 type View = 'setup' | 'home'
 
@@ -54,6 +57,7 @@ export default function App(): React.JSX.Element {
   const error = usePlatformStore((state) => state.error)
   const load = usePlatformStore((state) => state.load)
   const [view, setView] = useState<View>('setup')
+  const route = useNavigation((state) => state.route)
 
   useEffect(() => {
     void load()
@@ -85,6 +89,14 @@ export default function App(): React.JSX.Element {
         }}
       />
     )
+  }
+
+  if (route.name === 'editor') {
+    return <EditorScreen key={route.key} projectKey={route.key} />
+  }
+
+  if (route.name === 'library') {
+    return <LibraryScreen />
   }
 
   return (
