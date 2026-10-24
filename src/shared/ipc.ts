@@ -9,6 +9,7 @@ import type {
 } from './platform'
 import type { EditorState, ProjectFile, ProjectSummary } from './project'
 import type { ExportSettings } from './export'
+import type { SettingsInfo } from './settings'
 import type { RecorderStartRequest, RecorderState, RecorderTrack } from './recorder'
 
 export * from './app'
@@ -47,7 +48,11 @@ export const IPC_CHANNELS = {
   exportStart: 'export:start',
   exportFrame: 'export:frame',
   exportFinish: 'export:finish',
-  exportCancel: 'export:cancel'
+  exportCancel: 'export:cancel',
+  settingsGet: 'settings:get',
+  settingsChooseRecordingsFolder: 'settings:choose-recordings-folder',
+  settingsResetRecordingsFolder: 'settings:reset-recordings-folder',
+  settingsOpenLogs: 'settings:open-logs'
 } as const
 
 export const IPC_EVENTS = {
@@ -108,6 +113,10 @@ export interface IpcContract {
   [IPC_CHANNELS.exportFrame]: { args: [id: string, frame: ArrayBuffer]; result: void }
   [IPC_CHANNELS.exportFinish]: { args: [id: string]; result: string }
   [IPC_CHANNELS.exportCancel]: { args: [id: string]; result: void }
+  [IPC_CHANNELS.settingsGet]: { args: []; result: SettingsInfo }
+  [IPC_CHANNELS.settingsChooseRecordingsFolder]: { args: []; result: SettingsInfo | null }
+  [IPC_CHANNELS.settingsResetRecordingsFolder]: { args: []; result: SettingsInfo }
+  [IPC_CHANNELS.settingsOpenLogs]: { args: []; result: boolean }
 }
 
 /** Contract exposed to the renderer through the preload bridge. */
@@ -123,6 +132,12 @@ export interface StudioApi {
     getSources: (options?: CaptureSourcesOptions) => Promise<CaptureSource[]>
     listWindows: () => Promise<CaptureSource[]>
     getCursorPosition: () => Promise<Point>
+  }
+  settings: {
+    get: () => Promise<SettingsInfo>
+    chooseRecordingsFolder: () => Promise<SettingsInfo | null>
+    resetRecordingsFolder: () => Promise<SettingsInfo>
+    openLogs: () => Promise<boolean>
   }
   exporter: {
     start: (settings: ExportSettings) => Promise<string | null>

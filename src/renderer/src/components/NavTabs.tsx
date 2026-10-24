@@ -2,7 +2,8 @@ import { useNavigation } from '@renderer/stores/navigation'
 
 const TABS = [
   { name: 'record', label: 'Record' },
-  { name: 'library', label: 'Projects' }
+  { name: 'library', label: 'Projects' },
+  { name: 'settings', label: 'Settings' }
 ] as const
 
 /** Top-level navigation. Editor views sit outside it and have their own back button. */

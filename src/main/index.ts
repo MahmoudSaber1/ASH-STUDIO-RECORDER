@@ -1,6 +1,8 @@
 import { app } from 'electron'
 import { installFileLogger } from '@main/logger'
 import { registerMediaProtocol, registerMediaScheme } from '@main/media/protocol'
+import { loadSettings } from '@main/settings'
+import { installTray } from '@main/tray'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { IPC_EVENTS } from '@shared/ipc'
 import { registerIpcHandlers } from '@main/ipc'
@@ -39,6 +41,7 @@ if (!gotSingleInstanceLock) {
   void app.whenReady().then(() => {
     installFileLogger()
     registerMediaProtocol()
+    void loadSettings()
     electronApp.setAppUserModelId('com.ashstudio.recorder')
 
     app.on('browser-window-created', (_, window) => {
@@ -57,6 +60,7 @@ if (!gotSingleInstanceLock) {
       if (process.platform !== 'darwin') app.quit()
     })
     prepareRecorderToolbar()
+    installTray()
     void recorderManager.recoverInterruptedSessions()
 
     recorderManager.setStartShortcut(() => {

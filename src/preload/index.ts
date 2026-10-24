@@ -23,6 +23,12 @@ const subscribe = <T>(channel: string, listener: (payload: T) => void): (() => v
 }
 
 const api: StudioApi = {
+  settings: {
+    get: () => invoke(IPC_CHANNELS.settingsGet),
+    chooseRecordingsFolder: () => invoke(IPC_CHANNELS.settingsChooseRecordingsFolder),
+    resetRecordingsFolder: () => invoke(IPC_CHANNELS.settingsResetRecordingsFolder),
+    openLogs: () => invoke(IPC_CHANNELS.settingsOpenLogs)
+  },
   exporter: {
     start: (settings) => invoke(IPC_CHANNELS.exportStart, settings),
     frame: (id, frame) => invoke(IPC_CHANNELS.exportFrame, id, frame),

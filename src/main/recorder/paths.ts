@@ -1,4 +1,5 @@
 import { app } from 'electron'
+import { currentRecordingsFolder } from '@main/settings'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
@@ -31,10 +32,15 @@ const slugify = (value: string): string => {
   return slug || 'Recording'
 }
 
-/** Honors `ASH_RECORDINGS_DIR` so automated runs never touch the user library. */
+/**
+ * Where recordings live. `ASH_RECORDINGS_DIR` wins so automated runs never touch
+ * the user library, then the folder chosen in settings, then the Videos folder.
+ */
 export const getRecordingsRoot = (): string => {
   const override = process.env['ASH_RECORDINGS_DIR']?.trim()
   if (override) return override
+  const chosen = currentRecordingsFolder()
+  if (chosen) return chosen
   return join(app.getPath('videos'), 'Ash Studio Recorder')
 }
 

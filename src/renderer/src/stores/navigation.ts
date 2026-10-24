@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
-export type Route = { name: 'record' } | { name: 'library' } | { name: 'editor'; key: string }
+export type Route =
+  { name: 'record' } | { name: 'library' } | { name: 'settings' } | { name: 'editor'; key: string }
 
 interface NavigationStore {
   route: Route

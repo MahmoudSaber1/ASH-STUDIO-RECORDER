@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Logo } from '@renderer/components/Logo'
 import { EditorScreen } from '@renderer/screens/EditorScreen'
 import { LibraryScreen } from '@renderer/screens/LibraryScreen'
+import { SettingsScreen } from '@renderer/screens/SettingsScreen'
 import { RecorderScreen } from '@renderer/screens/RecorderScreen'
 import { SetupScreen } from '@renderer/screens/SetupScreen'
 import { usePlatformStore } from '@renderer/stores/platform'
@@ -97,6 +98,10 @@ export default function App(): React.JSX.Element {
 
   if (route.name === 'library') {
     return <LibraryScreen />
+  }
+
+  if (route.name === 'settings') {
+    return <SettingsScreen />
   }
 
   return (
