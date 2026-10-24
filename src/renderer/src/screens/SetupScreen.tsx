@@ -64,7 +64,7 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs font-medium text-violet-200">
             <span className="size-1.5 rounded-full bg-violet-400" />
-            Phase 1 · System check
+            System check
           </div>
           <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight text-white">
             Let&apos;s get access sorted.
