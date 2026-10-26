@@ -55,34 +55,27 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # FFmpeg is a native binary downloaded for one architecture. The Intel build
-      # runs on an Apple Silicon runner, so fetch the x64 binary explicitly and check it.
+      # FFmpeg is a native binary downloaded at install time for one platform and
+      # architecture. Fetch it explicitly for the target and check it is there:
+      # the Intel build runs on an Apple Silicon runner, and package managers may
+      # skip install scripts.
       - name: Fetch FFmpeg for the target architecture
-        if: runner.os == 'macOS'
         shell: bash
         run: |
           npm_config_arch=${{ matrix.arch }} node node_modules/ffmpeg-static/install.js
-          expected=$([ "${{ matrix.arch }}" = "x64" ] && echo x86_64 || echo arm64)
-          file node_modules/ffmpeg-static/ffmpeg | tee /dev/stderr | grep -q "$expected"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            test -s node_modules/ffmpeg-static/ffmpeg.exe
+          else
+            expected=$([ "${{ matrix.arch }}" = "x64" ] && echo x86_64 || echo arm64)
+            file node_modules/ffmpeg-static/ffmpeg | tee /dev/stderr | grep -q "$expected"
+          fi
 
       - run: npm run build
 
-      - name: Build and publish installers (draft release)
+      # build/after-all-artifact-build.cjs adds a SHA256SUMS file to the upload.
+      - name: Build and publish installers and checksums (draft release)
         run: npx electron-builder ${{ matrix.builder }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No paid signing certificates yet; macOS builds are ad-hoc signed.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-
-      - name: Publish SHA-256 checksums
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd release
-          shopt -s nullglob
-          files=(*.dmg *.zip *.exe)
-          sums="SHA256SUMS-${{ runner.os }}-${{ matrix.arch }}.txt"
-          if command -v sha256sum >/dev/null; then sha256sum "${files[@]}" > "$sums"; else shasum -a 256 "${files[@]}" > "$sums"; fi
-          cat "$sums"
-          gh release upload "$GITHUB_REF_NAME" "$sums" --clobber
