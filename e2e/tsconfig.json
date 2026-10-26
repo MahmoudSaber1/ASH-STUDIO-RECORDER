@@ -8,7 +8,12 @@
     "allowJs": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "baseUrl": "..",
+    "paths": {
+      "@shared/*": ["src/shared/*"]
+    }
   },
-  "include": ["./**/*"]
+  "include": ["./**/*", "../src/preload/api.d.ts"]
 }
