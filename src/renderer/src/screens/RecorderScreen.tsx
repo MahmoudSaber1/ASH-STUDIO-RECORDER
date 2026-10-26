@@ -112,7 +112,7 @@ function SourcePreview({ target }: { target: CaptureTarget }): React.JSX.Element
       <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
         Live preview {status === 'live' ? '· live' : ''}
       </p>
-      <div className="relative mx-auto flex aspect-video w-full max-w-[600px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black">
+      <div className="relative mx-auto flex aspect-video w-full max-w-[600px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#000]">
         <video
           ref={videoRef}
           muted
@@ -187,7 +187,7 @@ function SourceCard({
           : 'border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]'
       }`}
     >
-      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-black">
+      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-[#000]">
         {source.thumbnail ? (
           <img
             src={source.thumbnail}
@@ -695,7 +695,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                     disabled={startDisabled}
                     className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
                   >
-                    <span className="size-2 rounded-full bg-white" />
+                    <span className="size-2 rounded-full bg-[#fff]" />
                     Start recording
                   </button>
 

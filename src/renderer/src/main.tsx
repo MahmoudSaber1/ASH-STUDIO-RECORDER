@@ -4,6 +4,7 @@ import App from '@renderer/App'
 import { CameraBubble } from '@renderer/screens/CameraBubble'
 import { RecorderToolbar } from '@renderer/screens/RecorderToolbar'
 import '@renderer/styles/globals.css'
+import { applyTheme, watchSystemTheme } from '@renderer/lib/theme'
 
 const container = document.getElementById('root')
 
@@ -18,6 +19,10 @@ const isCamera = window.location.hash === '#camera'
 if (isToolbar || isCamera) {
   document.documentElement.classList.add('toolbar-window')
 }
+
+// Apply the theme before the first render so there is no flash of the wrong one.
+applyTheme()
+watchSystemTheme()
 
 const root = isCamera ? <CameraBubble /> : isToolbar ? <RecorderToolbar /> : <App />
 

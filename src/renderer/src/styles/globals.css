@@ -39,3 +39,66 @@ body {
 ::selection {
   background: color-mix(in oklab, var(--color-accent) 45%, transparent);
 }
+
+/*
+ * Light theme. The UI is written with dark-first utility classes, so instead of
+ * duplicating every class, light mode remaps the color tokens those classes
+ * read: white and black swap, the zinc scale inverts, and pale accent text
+ * shades become their deep counterparts so text stays readable on light tints.
+ * The floating recorder toolbar keeps its own dark surface on purpose.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-canvas: #f5f5f8;
+  --color-panel: #ffffff;
+  --color-white: oklch(21% 0.006 285.885);
+  --color-black: #ffffff;
+
+  --color-zinc-50: oklch(14.1% 0.005 285.823);
+  --color-zinc-100: oklch(21% 0.006 285.885);
+  --color-zinc-200: oklch(27.4% 0.006 286.033);
+  --color-zinc-300: oklch(37% 0.013 285.805);
+  --color-zinc-400: oklch(44.2% 0.017 285.786);
+  --color-zinc-500: oklch(52% 0.016 285.938);
+  --color-zinc-600: oklch(62% 0.015 286.067);
+  --color-zinc-700: oklch(87.1% 0.006 286.286);
+  --color-zinc-800: oklch(92% 0.004 286.32);
+  --color-zinc-900: oklch(96.7% 0.001 286.375);
+  --color-zinc-950: oklch(98.5% 0 none);
+
+  --color-violet-100: oklch(43.2% 0.232 292.759);
+  --color-violet-200: oklch(49.1% 0.27 292.581);
+  --color-violet-300: oklch(54.1% 0.281 293.009);
+  --color-rose-100: oklch(45.5% 0.188 13.697);
+  --color-rose-200: oklch(51.4% 0.222 16.935);
+  --color-rose-300: oklch(58.6% 0.253 17.585);
+  --color-amber-100: oklch(47.3% 0.137 46.201);
+  --color-amber-200: oklch(55.5% 0.163 48.998);
+  --color-amber-300: oklch(66.6% 0.179 58.318);
+  --color-emerald-100: oklch(43.2% 0.095 166.913);
+  --color-emerald-200: oklch(50.8% 0.118 165.612);
+  --color-emerald-300: oklch(59.6% 0.145 163.225);
+  --color-sky-100: oklch(44.3% 0.11 240.79);
+  --color-sky-200: oklch(50% 0.134 242.749);
+  --color-sky-300: oklch(58.8% 0.158 241.966);
+}
+
+:root[data-theme='light'] body {
+  color: oklch(21% 0.006 285.885);
+}
+
+/* Text on solid accent buttons stays white in both themes. */
+:root[data-theme='light'] .bg-violet-500,
+:root[data-theme='light'] .bg-rose-500,
+:root[data-theme='light'] .bg-violet-500 *,
+:root[data-theme='light'] .bg-rose-500 * {
+  color: #ffffff;
+}
+
+/* Keep the floating toolbar dark: it sits on top of whatever is being recorded. */
+:root[data-theme='light'].toolbar-window {
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-zinc-200: oklch(92% 0.004 286.32);
+  --color-zinc-500: oklch(55.2% 0.016 285.938);
+}

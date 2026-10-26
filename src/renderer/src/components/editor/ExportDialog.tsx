@@ -85,7 +85,7 @@ export function ExportDialog(): React.JSX.Element | null {
       aria-label="Export video"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
     >
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#101015] p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-panel p-6 shadow-2xl">
         <h2 className="text-base font-semibold text-white">Export video</h2>
         <p className="mt-1 text-xs text-zinc-500">
           Renders your edit frame by frame with the same engine as the preview.
