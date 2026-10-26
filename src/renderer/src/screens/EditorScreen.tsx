@@ -54,19 +54,11 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
   const togglePlay = useEditor((state) => state.togglePlay)
   const skip = useEditor((state) => state.skip)
   const seek = useEditor((state) => state.seek)
-  const split = useEditor((state) => state.split)
-  const deleteSelection = useEditor((state) => state.deleteSelection)
-  const restoreSelection = useEditor((state) => state.restoreSelection)
-  const restoreAll = useEditor((state) => state.restoreAll)
-  const trimToSelection = useEditor((state) => state.trimToSelection)
-  const clearTrim = useEditor((state) => state.clearTrim)
-  const editor = useEditor((state) => state.editor)
   const platform = usePlatformStore((state) => state.appInfo?.platform)
   const undo = useEditor((state) => state.undo)
   const redo = useEditor((state) => state.redo)
   const canUndo = useEditor((state) => state.past.length > 0)
   const canRedo = useEditor((state) => state.future.length > 0)
-  const selection = useEditor((state) => state.selection)
   const setExportOpen = useEditor((state) => state.setExportOpen)
   const renameProject = useEditor((state) => state.renameProject)
   const outputDuration = useEditor(selectOutputDuration)
@@ -116,10 +108,6 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
       } else if (event.key === 'End') {
         event.preventDefault()
         void seek(useEditor.getState().media?.durationMs ?? 0)
-      } else if (event.key.toLowerCase() === 's' && !mod) {
-        split()
-      } else if (event.key === 'Delete' || event.key === 'Backspace') {
-        deleteSelection()
       }
     }
 
@@ -127,7 +115,7 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
     return () => {
       window.removeEventListener('keydown', onKey)
     }
-  }, [togglePlay, split, deleteSelection, undo, redo, skip, seek])
+  }, [togglePlay, undo, redo, skip, seek])
 
   if (status === 'loading' || status === 'idle') {
     return (
@@ -163,7 +151,7 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
           platform === 'darwin' ? 'pl-24' : 'pl-5'
         }`}
       >
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3 [-webkit-app-region:no-drag]">
           <button
             type="button"
             onClick={() => {
@@ -214,7 +202,7 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 [-webkit-app-region:no-drag]">
           <ToolButton label="Undo" onClick={undo} disabled={!canUndo} title="Undo (⌘Z)" />
           <ToolButton label="Redo" onClick={redo} disabled={!canRedo} title="Redo (⇧⌘Z)" />
           <button
@@ -235,30 +223,11 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
             <Preview />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Player controls sit centered under the preview; output length on the right. */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <span aria-hidden="true" />
             <Transport />
-            <span className="mx-1 h-6 w-px bg-white/10" aria-hidden="true" />
-            <ToolButton label="Split" onClick={split} title="Split at playhead (S)" />
-            <ToolButton
-              label="Delete"
-              onClick={deleteSelection}
-              disabled={!selection}
-              title="Remove selection (⌫)"
-            />
-            <ToolButton
-              label="Restore"
-              onClick={restoreSelection}
-              disabled={!selection}
-              title="Bring back removed time in selection"
-            />
-            <ToolButton
-              label="Restore all"
-              onClick={restoreAll}
-              disabled={editor.cuts.length === 0}
-            />
-            <ToolButton label="Trim to selection" onClick={trimToSelection} disabled={!selection} />
-            <ToolButton label="Clear trim" onClick={clearTrim} disabled={!editor.trim} />
-            <span className="ml-auto text-[11px] text-zinc-500">
+            <span className="justify-self-end text-[11px] text-zinc-500">
               Output {formatDuration(outputDuration)} · source {formatDuration(media.durationMs)}
             </span>
           </div>

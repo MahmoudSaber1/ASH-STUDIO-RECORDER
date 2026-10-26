@@ -11,7 +11,7 @@
     "node": ">=22.22.1"
   },
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "electron-vite dev --watch",
     "start": "electron-vite preview",
     "build": "npm run typecheck && electron-vite build",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
