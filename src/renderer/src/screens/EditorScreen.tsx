@@ -6,6 +6,8 @@ import { Timeline } from '@renderer/components/editor/Timeline'
 import { formatDuration } from '@renderer/lib/format'
 import { useEditor, selectOutputDuration } from '@renderer/stores/editor'
 import { useNavigation } from '@renderer/stores/navigation'
+import { usePlatformStore } from '@renderer/stores/platform'
+import { Transport } from '@renderer/components/editor/Transport'
 
 const SAVE_LABEL = {
   saved: 'Saved',
@@ -49,16 +51,17 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
   const saveStatus = useEditor((state) => state.saveStatus)
   const notice = useEditor((state) => state.notice)
   const clearNotice = useEditor((state) => state.clearNotice)
-  const playing = useEditor((state) => state.playing)
   const togglePlay = useEditor((state) => state.togglePlay)
+  const skip = useEditor((state) => state.skip)
+  const seek = useEditor((state) => state.seek)
   const split = useEditor((state) => state.split)
   const deleteSelection = useEditor((state) => state.deleteSelection)
   const restoreSelection = useEditor((state) => state.restoreSelection)
   const restoreAll = useEditor((state) => state.restoreAll)
   const trimToSelection = useEditor((state) => state.trimToSelection)
   const clearTrim = useEditor((state) => state.clearTrim)
-  const speedSelection = useEditor((state) => state.speedSelection)
-  const speedUpIdle = useEditor((state) => state.speedUpIdle)
+  const editor = useEditor((state) => state.editor)
+  const platform = usePlatformStore((state) => state.appInfo?.platform)
   const undo = useEditor((state) => state.undo)
   const redo = useEditor((state) => state.redo)
   const canUndo = useEditor((state) => state.past.length > 0)
@@ -101,6 +104,18 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
       if (event.key === ' ') {
         event.preventDefault()
         togglePlay()
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        skip(-(event.shiftKey ? 1000 : 5000))
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        skip(event.shiftKey ? 1000 : 5000)
+      } else if (event.key === 'Home') {
+        event.preventDefault()
+        void seek(0)
+      } else if (event.key === 'End') {
+        event.preventDefault()
+        void seek(useEditor.getState().media?.durationMs ?? 0)
       } else if (event.key.toLowerCase() === 's' && !mod) {
         split()
       } else if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -112,7 +127,7 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
     return () => {
       window.removeEventListener('keydown', onKey)
     }
-  }, [togglePlay, split, deleteSelection, undo, redo])
+  }, [togglePlay, split, deleteSelection, undo, redo, skip, seek])
 
   if (status === 'loading' || status === 'idle') {
     return (
@@ -143,7 +158,11 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
 
   return (
     <div className="flex min-h-screen flex-1 flex-col">
-      <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-white/[0.04] bg-canvas/80 px-5 backdrop-blur-xl">
+      <header
+        className={`sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-white/[0.04] bg-canvas/80 pr-5 backdrop-blur-xl [-webkit-app-region:drag] ${
+          platform === 'darwin' ? 'pl-24' : 'pl-5'
+        }`}
+      >
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
@@ -217,13 +236,8 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={togglePlay}
-              className="rounded-lg bg-white/[0.08] px-3 py-1.5 text-xs font-medium text-white hover:bg-white/[0.14]"
-            >
-              {playing ? 'Pause' : 'Play'}
-            </button>
+            <Transport />
+            <span className="mx-1 h-6 w-px bg-white/10" aria-hidden="true" />
             <ToolButton label="Split" onClick={split} title="Split at playhead (S)" />
             <ToolButton
               label="Delete"
@@ -240,33 +254,10 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
             <ToolButton
               label="Restore all"
               onClick={restoreAll}
-              disabled={editorHasNoCuts(useEditor.getState().editor)}
+              disabled={editor.cuts.length === 0}
             />
             <ToolButton label="Trim to selection" onClick={trimToSelection} disabled={!selection} />
-            <ToolButton
-              label="Clear trim"
-              onClick={clearTrim}
-              disabled={!useEditor.getState().editor.trim}
-            />
-            <ToolButton
-              label="2× selection"
-              onClick={() => {
-                speedSelection(2)
-              }}
-              disabled={!selection}
-            />
-            <ToolButton
-              label="4× selection"
-              onClick={() => {
-                speedSelection(4)
-              }}
-              disabled={!selection}
-            />
-            <ToolButton
-              label="Speed up idle"
-              onClick={speedUpIdle}
-              title="Speed up stretches with no input"
-            />
+            <ToolButton label="Clear trim" onClick={clearTrim} disabled={!editor.trim} />
             <span className="ml-auto text-[11px] text-zinc-500">
               Output {formatDuration(outputDuration)} · source {formatDuration(media.durationMs)}
             </span>
@@ -294,5 +285,3 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
     </div>
   )
 }
-
-const editorHasNoCuts = (editor: { cuts: unknown[] }): boolean => editor.cuts.length === 0

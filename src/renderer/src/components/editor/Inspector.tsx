@@ -7,11 +7,13 @@ import type {
   FaceCamShape
 } from '@shared/project'
 import { useEditor } from '@renderer/stores/editor'
+import { SpeedPanel } from './SpeedPanel'
 
-type Tab = 'zoom' | 'cursor' | 'background' | 'frame' | 'facecam' | 'audio'
+type Tab = 'zoom' | 'speed' | 'cursor' | 'background' | 'frame' | 'facecam' | 'audio'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'zoom', label: 'Zoom' },
+  { id: 'speed', label: 'Speed' },
   { id: 'cursor', label: 'Cursor' },
   { id: 'background', label: 'Background' },
   { id: 'frame', label: 'Frame' },
@@ -293,6 +295,8 @@ export function Inspector({
             </Section>
           </>
         ) : null}
+
+        {tab === 'speed' ? <SpeedPanel /> : null}
 
         {tab === 'cursor' ? (
           <Section title="Cursor">

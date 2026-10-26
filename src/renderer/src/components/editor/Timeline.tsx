@@ -20,6 +20,7 @@ export function Timeline(): React.JSX.Element {
   const selectedZoomId = useEditor((state) => state.selectedZoomId)
   const pxPerSecond = useEditor((state) => state.pxPerSecond)
   const waveform = useEditor((state) => state.waveform)
+  const filmstrip = useEditor((state) => state.filmstrip)
   const seek = useEditor((state) => state.seek)
   const setSelection = useEditor((state) => state.setSelection)
   const setSelectedZoom = useEditor((state) => state.setSelectedZoom)
@@ -180,6 +181,25 @@ export function Timeline(): React.JSX.Element {
           </div>
 
           <Row label="Clips">
+            {filmstrip.map((frame, index) => {
+              const next = filmstrip[index + 1]
+              const span = next ? next.startMs - frame.startMs : durationMs - frame.startMs
+              return (
+                <img
+                  key={frame.startMs}
+                  src={frame.url}
+                  alt=""
+                  aria-hidden="true"
+                  draggable={false}
+                  className="pointer-events-none absolute top-0.5 bottom-0.5 h-auto max-w-none object-cover opacity-80"
+                  style={{
+                    left: LABEL_WIDTH + toX(frame.startMs),
+                    width: Math.max(1, toX(span)),
+                    height: ROW_HEIGHT - 4
+                  }}
+                />
+              )
+            })}
             {segments.map((segment) => (
               <div
                 key={`${segment.start}-${segment.end}`}

@@ -116,3 +116,25 @@ export const removeZoomSegment = (editor: EditorState, id: string): EditorState 
   ...editor,
   zoom: { ...editor.zoom, segments: editor.zoom.segments.filter((segment) => segment.id !== id) }
 })
+
+/** Removes every speed change inside `range`, so that stretch plays at 1×. */
+export const clearSpeedRamps = (editor: EditorState, range: TimeRange): EditorState => {
+  const kept: SpeedRamp[] = []
+
+  for (const ramp of editor.speedRamps) {
+    if (ramp.end <= range.start || ramp.start >= range.end) {
+      kept.push(ramp)
+      continue
+    }
+    if (ramp.start < range.start) kept.push({ ...ramp, end: range.start })
+    if (ramp.end > range.end) kept.push({ ...ramp, id: `${ramp.id}-b`, start: range.end })
+  }
+
+  return { ...editor, speedRamps: kept }
+}
+
+/** Changes the speed of one existing ramp without moving it. */
+export const setRampSpeed = (editor: EditorState, id: string, speed: number): EditorState => ({
+  ...editor,
+  speedRamps: editor.speedRamps.map((ramp) => (ramp.id === id ? { ...ramp, speed } : ramp))
+})

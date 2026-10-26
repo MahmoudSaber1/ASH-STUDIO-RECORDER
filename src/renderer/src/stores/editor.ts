@@ -3,6 +3,8 @@ import type { PointSample } from '@shared/cursor'
 import { detectZoomSegments } from '@shared/zoom'
 import {
   addZoomSegment,
+  clearSpeedRamps,
+  setRampSpeed,
   deleteRange,
   findIdleRanges,
   removeSpeedRamp,
@@ -25,11 +27,11 @@ import { buildSegments, outputDurationMs, type Segment } from '@shared/timeline'
 import type { RecorderInputEvent } from '@shared/recorder'
 import { ProjectMedia } from '@renderer/lib/project-media'
 import { loadWaveform } from '@renderer/lib/waveform'
+import { buildFilmstrip, type FilmFrame } from '@renderer/lib/filmstrip'
 
 export const WAVEFORM_BUCKETS = 1200
 const SAVE_DELAY_MS = 800
 const COALESCE_WINDOW_MS = 1000
-const IDLE_SPEED = 4
 
 export type LoadStatus = 'idle' | 'loading' | 'ready' | 'error'
 export type SaveStatus = 'saved' | 'pending' | 'saving' | 'error'
@@ -58,6 +60,7 @@ export interface EditorStore {
   selectedZoomId: string | null
   pxPerSecond: number
   waveform: Float32Array | null
+  filmstrip: FilmFrame[]
   exportOpen: boolean
 
   load: (key: string) => Promise<void>
@@ -78,8 +81,11 @@ export interface EditorStore {
   trimToSelection: () => void
   clearTrim: () => void
   speedSelection: (speed: number) => void
+  setRampSpeed: (id: string, speed: number) => void
+  clearSpeedChanges: () => void
   removeRamp: (id: string) => void
-  speedUpIdle: () => void
+  speedUpIdle: (minIdleMs: number, speed: number) => void
+  skip: (deltaMs: number) => void
   addZoomAtPlayhead: () => void
   detectZoom: () => void
   updateZoom: (id: string, patch: Partial<ZoomSegment>) => void
@@ -101,6 +107,23 @@ const cancelFrame = (): void => {
   loopFrame = null
 }
 
+const writeNow = (
+  key: string,
+  editor: EditorState,
+  set: (partial: Partial<EditorStore>) => void,
+  isCurrent: () => boolean
+): Promise<void> => {
+  set({ saveStatus: 'saving' })
+  return window.api.projects
+    .saveEditor(key, editor)
+    .then(() => {
+      if (isCurrent()) set({ saveStatus: 'saved' })
+    })
+    .catch(() => {
+      if (isCurrent()) set({ saveStatus: 'error' })
+    })
+}
+
 const scheduleSave = (
   get: () => EditorStore,
   set: (partial: Partial<EditorStore>) => void
@@ -108,18 +131,26 @@ const scheduleSave = (
   if (saveTimer) clearTimeout(saveTimer)
   set({ saveStatus: 'pending' })
   saveTimer = setTimeout(() => {
+    saveTimer = null
     const { key, editor } = get()
     if (!key) return
-    set({ saveStatus: 'saving' })
-    window.api.projects
-      .saveEditor(key, editor)
-      .then(() => {
-        set({ saveStatus: 'saved' })
-      })
-      .catch(() => {
-        set({ saveStatus: 'error' })
-      })
+    void writeNow(key, editor, set, () => get().key === key)
   }, SAVE_DELAY_MS)
+}
+
+/**
+ * Writes a pending edit immediately. Used when leaving the editor, so an edit made
+ * less than the autosave delay before leaving is not lost.
+ */
+const flushPendingSave = (
+  get: () => EditorStore,
+  set: (partial: Partial<EditorStore>) => void
+): void => {
+  if (!saveTimer) return
+  clearTimeout(saveTimer)
+  saveTimer = null
+  const { key, editor } = get()
+  if (key) void writeNow(key, editor, set, () => false)
 }
 
 /** 0 to 1 gain from the fade in and fade out settings, relative to the trimmed edit. */
@@ -219,6 +250,7 @@ export const useEditor = create<EditorStore>((set, get) => {
     selectedZoomId: null,
     pxPerSecond: 80,
     waveform: null,
+    filmstrip: [],
     exportOpen: false,
 
     load: async (key) => {
@@ -250,6 +282,16 @@ export const useEditor = create<EditorStore>((set, get) => {
           })
         }
 
+        void buildFilmstrip({
+          key,
+          fileName: project.tracks.screen?.fileName ?? '',
+          durationMs: media.durationMs,
+          screenOffsetMs: media.screenOffsetMs,
+          isCancelled: () => get().key !== key
+        }).then((filmstrip) => {
+          if (get().key === key) set({ filmstrip })
+        })
+
         await get().seek(0)
       } catch (error) {
         set({
@@ -261,10 +303,7 @@ export const useEditor = create<EditorStore>((set, get) => {
 
     close: () => {
       cancelFrame()
-      if (saveTimer) {
-        clearTimeout(saveTimer)
-        saveTimer = null
-      }
+      flushPendingSave(get, set)
       get().media?.dispose()
       seekToken += 1
       lastCoalesce = null
@@ -284,6 +323,7 @@ export const useEditor = create<EditorStore>((set, get) => {
         selection: null,
         selectedZoomId: null,
         waveform: null,
+        filmstrip: [],
         exportOpen: false
       })
     },
@@ -420,15 +460,25 @@ export const useEditor = create<EditorStore>((set, get) => {
       const { selection } = get()
       if (!selection) return
       get().update((editor) =>
-        setSpeedRamp(editor, selection, speed, `ramp-${Date.now().toString(36)}`)
+        speed === 1
+          ? clearSpeedRamps(editor, selection)
+          : setSpeedRamp(editor, selection, speed, `ramp-${Date.now().toString(36)}`)
       )
+    },
+
+    setRampSpeed: (id, speed) => {
+      get().update((editor) => setRampSpeed(editor, id, speed))
+    },
+
+    clearSpeedChanges: () => {
+      get().update((editor) => ({ ...editor, speedRamps: [] }))
     },
 
     removeRamp: (id) => {
       get().update((editor) => removeSpeedRamp(editor, id))
     },
 
-    speedUpIdle: () => {
+    speedUpIdle: (minIdleMs, speed) => {
       const { media, editor } = get()
       if (!media) return
 
@@ -443,18 +493,31 @@ export const useEditor = create<EditorStore>((set, get) => {
         ...keys.map((key) => ({ t: key.t, type: 'keydown' as const, keycode: key.keycode }))
       ].sort((a, b) => a.t - b.t)
 
-      const idle = findIdleRanges(events, media.durationMs)
+      const idle = findIdleRanges(events, media.durationMs, minIdleMs)
       if (idle.length === 0) {
-        set({ notice: 'No idle stretches longer than two seconds were found.' })
+        set({
+          notice: `No idle stretches longer than ${(minIdleMs / 1000).toFixed(1)} s were found.`
+        })
         return
       }
 
       let next = editor
       idle.forEach((range, index) => {
-        next = setSpeedRamp(next, range, IDLE_SPEED, `idle-${Date.now().toString(36)}-${index}`)
+        next =
+          speed === 1
+            ? clearSpeedRamps(next, range)
+            : setSpeedRamp(next, range, speed, `idle-${Date.now().toString(36)}-${index}`)
       })
       get().update(() => next)
-      set({ notice: `Sped up ${idle.length} idle ${idle.length === 1 ? 'stretch' : 'stretches'}.` })
+      set({
+        notice: `Changed speed of ${idle.length} idle ${idle.length === 1 ? 'stretch' : 'stretches'}.`
+      })
+    },
+
+    skip: (deltaMs) => {
+      const { media, playheadMs } = get()
+      if (!media) return
+      void get().seek(playheadMs + deltaMs)
     },
 
     addZoomAtPlayhead: () => {
