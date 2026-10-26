@@ -24,6 +24,21 @@ export const makeFixture = (root, name = 'Fixture demo') => {
     '1M',
     join(dir, 'screen.webm')
   ])
+  // testsrc2 animates everywhere, so a frozen face cam is easy to detect.
+  execFileSync(ffmpegPath, [
+    '-y',
+    '-v',
+    'error',
+    '-f',
+    'lavfi',
+    '-i',
+    'testsrc2=size=640x480:rate=30:duration=8',
+    '-c:v',
+    'libvpx',
+    '-b:v',
+    '600k',
+    join(dir, 'webcam.webm')
+  ])
   execFileSync(ffmpegPath, [
     '-y',
     '-v',
@@ -62,7 +77,7 @@ export const makeFixture = (root, name = 'Fixture demo') => {
     target: { id: 'screen:1:0', name: 'Display 1 · 1280×720', kind: 'screen', displayId: '1' },
     options: {
       fps: 30,
-      captureWebcam: false,
+      captureWebcam: true,
       captureMicrophone: true,
       captureSystemAudio: false,
       countdownMs: 0,
@@ -76,9 +91,10 @@ export const makeFixture = (root, name = 'Fixture demo') => {
       pausedTotalMs: 0,
       clock: 'active'
     },
-    mediaStartedAt: { screen: 1_000_250, microphone: 1_000_300 },
+    mediaStartedAt: { screen: 1_000_250, webcam: 1_000_260, microphone: 1_000_300 },
     tracks: {
       screen: { fileName: 'screen.webm', bytes: 1, startedAt: 1_000_250 },
+      webcam: { fileName: 'webcam.webm', bytes: 1, startedAt: 1_000_260 },
       microphone: { fileName: 'microphone.webm', bytes: 1, startedAt: 1_000_300 }
     },
     events: { fileName: 'events.jsonl', count: events.length },

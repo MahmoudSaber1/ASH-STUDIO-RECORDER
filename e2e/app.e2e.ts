@@ -111,6 +111,37 @@ test('saves edits and reopens with the same zoom segments', async () => {
   await expect(page.getByRole('button', { name: /\d(\.\d)?×/ }).first()).toBeVisible()
 })
 
+/**
+ * Reads a small patch at the center of the face cam in the preview canvas. The
+ * position follows the default layout: 6% padding and an 18% face cam at the
+ * bottom right of a 16:9 frame.
+ */
+const sampleFaceCam = (target: Page): Promise<number[]> =>
+  target.evaluate(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('canvas[aria-label="Preview"]')
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return []
+    const x = Math.round(canvas.width * 0.7733) - 8
+    const y = Math.round(canvas.height * 0.68) - 8
+    return Array.from(ctx.getImageData(x, y, 16, 16).data)
+  })
+
+test('plays the face cam with the video instead of a frozen frame', async () => {
+  await page.getByRole('tab', { name: 'Face cam' }).click()
+  await page.getByLabel('Show face cam').check()
+  await page.getByRole('button', { name: 'Go to start' }).click()
+  await page.getByRole('button', { name: 'Play', exact: true }).click()
+
+  await page.waitForTimeout(700)
+  const first = await sampleFaceCam(page)
+  await page.waitForTimeout(1200)
+  const second = await sampleFaceCam(page)
+  await page.getByRole('button', { name: 'Pause', exact: true }).click()
+
+  expect(first.length).toBeGreaterThan(0)
+  expect(second).not.toEqual(first)
+})
+
 test('exports an MP4 with the chosen resolution', async () => {
   await page.getByRole('button', { name: 'Export', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Export video' })
