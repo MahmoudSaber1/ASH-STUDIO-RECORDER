@@ -70,21 +70,21 @@ test('opens the projects library and lists the fixture project', async () => {
 test('opens the editor and detects zoom from clicks', async () => {
   await page.getByRole('button', { name: 'Open' }).first().click()
   await expect(page.getByRole('slider', { name: 'Timeline' })).toBeVisible()
-  await expect(page.getByLabel('Preview')).toBeVisible()
+  await expect(page.getByLabel('Preview', { exact: true })).toBeVisible()
+
+  // Zoom is generated from clicks the first time a project opens.
+  await expect(page.getByRole('button', { name: /\d(\.\d)?×/ }).first()).toBeVisible()
 
   await page.getByRole('tab', { name: 'Zoom' }).click()
   await page.getByRole('button', { name: 'Detect from clicks' }).click()
   await expect(page.getByRole('status')).toContainText(/Found \d+ zoom segment/)
 })
 
-test('plays, splits, deletes and undoes an edit', async () => {
+test('speeds up a selected range from the Speed tab and undoes it', async () => {
   const slider = page.getByRole('slider', { name: 'Timeline' })
   await expect(slider).toHaveAttribute('aria-valuemax', /\d+/)
 
-  await page.getByRole('button', { name: 'Split' }).click()
-  await page.getByRole('button', { name: 'Undo' }).click()
-
-  // Select a range by dragging on the timeline and delete it.
+  // Select a range by dragging on the timeline.
   // The detected-zoom notice pushes the timeline down, so bring it into view first.
   await slider.scrollIntoViewIfNeeded()
   const box = await slider.boundingBox()
@@ -93,10 +93,14 @@ test('plays, splits, deletes and undoes an edit', async () => {
   await page.mouse.down()
   await page.mouse.move(box.x + 320, box.y + 40, { steps: 8 })
   await page.mouse.up()
-  await page.getByRole('button', { name: 'Delete', exact: true }).click()
-  await expect(page.getByText(/Output/)).toBeVisible()
+
+  await page.getByRole('tab', { name: 'Speed' }).click()
+  await page.getByRole('button', { name: '2×', exact: true }).first().click()
+  const ramp = page.getByTitle('Click to remove this speed change')
+  await expect(ramp).toHaveCount(1)
 
   await page.getByRole('button', { name: 'Undo' }).click()
+  await expect(ramp).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Redo' })).toBeEnabled()
 })
 
