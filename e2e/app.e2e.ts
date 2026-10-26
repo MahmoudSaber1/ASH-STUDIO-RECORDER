@@ -40,7 +40,12 @@ test.beforeAll(async () => {
   app = await electron.launch({
     ...(packaged ? { executablePath: packaged } : { args: [join(REPO, 'out/main/index.js')] }),
     cwd: REPO,
-    env: { ...process.env, ASH_RECORDINGS_DIR: recordings, NODE_ENV: 'production' }
+    env: {
+      ...process.env,
+      ASH_RECORDINGS_DIR: recordings,
+      ASH_USER_DATA_DIR: join(recordings, '.profile'),
+      NODE_ENV: 'production'
+    }
   })
 
   // Native dialogs cannot be driven from the test; route them to fixed paths.
@@ -61,7 +66,13 @@ test.afterAll(async () => {
 })
 
 test('opens the projects library and lists the fixture project', async () => {
+  // First run: welcome, permissions, then the ready screen.
+  await expect(page.getByRole('heading', { name: 'Welcome to Ash Studio Recorder' })).toBeVisible()
+  await expect(page.getByText(recordings)).toBeVisible()
+  await page.getByRole('button', { name: 'Get started' }).click()
   await page.getByRole('button', { name: 'Skip for now' }).click()
+  await expect(page.getByRole('heading', { name: "You're ready" })).toBeVisible()
+  await page.getByRole('button', { name: 'Start recording' }).click()
   await page.getByRole('button', { name: 'Projects' }).click()
   await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible()
   await expect(page.getByRole('heading', { name: PROJECT_NAME })).toBeVisible()
@@ -169,5 +180,6 @@ test('settings screen shows the recordings folder used by the tests', async () =
   await page.getByRole('button', { name: '← Projects' }).click()
   await page.getByRole('button', { name: 'Settings' }).click()
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-  await expect(page.getByText(recordings)).toBeVisible()
+  await expect(page.getByText(recordings, { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Reset app…' })).toBeVisible()
 })

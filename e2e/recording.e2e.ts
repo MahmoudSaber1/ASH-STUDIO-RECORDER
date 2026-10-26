@@ -18,7 +18,11 @@ test('records with the camera bubble visible, then closes it', async () => {
       '--use-fake-device-for-media-stream',
       '--use-fake-ui-for-media-stream'
     ],
-    env: { ...process.env, ASH_RECORDINGS_DIR: recordings }
+    env: {
+      ...process.env,
+      ASH_RECORDINGS_DIR: recordings,
+      ASH_USER_DATA_DIR: join(recordings, '.profile')
+    }
   })
 
   try {
@@ -29,7 +33,9 @@ test('records with the camera bubble visible, then closes it', async () => {
     }
     if (!page) throw new Error('The main window never appeared')
 
+    await page.getByRole('button', { name: 'Get started' }).click()
     await page.getByRole('button', { name: 'Skip for now' }).click()
+    await page.getByRole('button', { name: 'Start recording' }).click()
     await page.getByRole('switch', { name: 'Camera' }).click()
     await expect(page.getByRole('switch', { name: 'Camera' })).toHaveAttribute(
       'aria-checked',
