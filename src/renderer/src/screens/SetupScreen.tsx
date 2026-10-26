@@ -98,6 +98,14 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
           ))}
         </div>
 
+        {appInfo?.platform === 'darwin' && !appInfo.isPackaged ? (
+          <p className="mt-4 rounded-xl border border-sky-400/20 bg-sky-400/10 px-4 py-3 text-xs leading-relaxed text-sky-100">
+            Development build: macOS gives these permissions to the app that started this one (for
+            example Terminal or your editor), so Ash Studio Recorder does not appear in the Privacy
+            &amp; Security lists. The installed app appears there under its own name.
+          </p>
+        ) : null}
+
         {screenReady ? (
           <p className="mt-4 text-xs text-zinc-500">
             Detected {screenCount} {screenCount === 1 ? 'display' : 'displays'} and {windowCount}{' '}

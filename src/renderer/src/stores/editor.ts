@@ -176,6 +176,9 @@ export const useEditor = create<EditorStore>((set, get) => {
     const segment = segmentAt(buildSegments(media.durationMs, editor), playheadMs)
     const rate = segment?.speed ?? 1
     if (Math.abs(media.screen.playbackRate - rate) > 0.001) media.screen.playbackRate = rate
+    if (media.webcam && Math.abs(media.webcam.playbackRate - rate) > 0.001) {
+      media.webcam.playbackRate = rate
+    }
     if (media.mic) {
       // HTMLMediaElement.volume is capped at 1 in the preview. Exports can boost past it.
       const gain =
@@ -198,6 +201,7 @@ export const useEditor = create<EditorStore>((set, get) => {
 
     if (media.screen.ended || timelineMs >= end || timelineMs >= media.durationMs - 1) {
       media.screen.pause()
+      media.webcam?.pause()
       media.mic?.pause()
       set({ playing: false, playheadMs: Math.min(end, media.durationMs) })
       loopFrame = null
@@ -215,6 +219,20 @@ export const useEditor = create<EditorStore>((set, get) => {
     }
 
     applySpeedAndAudio()
+
+    // The camera is a separate file with its own start time. Keep it playing with
+    // the screen and correct drift, otherwise the face cam shows one frozen frame.
+    if (media.webcam) {
+      const camera = media.webcam
+      const cameraTarget = (current - media.webcamOffsetMs) / 1000
+      const inRange = cameraTarget >= 0 && cameraTarget <= (camera.duration || 0)
+      if (!inRange) {
+        if (!camera.paused) camera.pause()
+      } else {
+        if (camera.paused) void camera.play().catch(() => undefined)
+        if (Math.abs(camera.currentTime - cameraTarget) > 0.15) camera.currentTime = cameraTarget
+      }
+    }
 
     if (media.mic) {
       const micTarget = (current - media.micOffsetMs) / 1000
@@ -388,6 +406,7 @@ export const useEditor = create<EditorStore>((set, get) => {
 
       if (playing) {
         media.screen.pause()
+        media.webcam?.pause()
         media.mic?.pause()
         set({ playing: false })
         return
