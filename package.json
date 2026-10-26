@@ -6,6 +6,14 @@
   "description": "Open-source, cross-platform screen recorder and editor with automatic zoom and camera motion.",
   "author": "Ash Studio Recorder contributors",
   "license": "MIT",
+  "homepage": "https://github.com/ashrafmo-1/ASH-STUDIO-RECORDER",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ashrafmo-1/ASH-STUDIO-RECORDER.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ashrafmo-1/ASH-STUDIO-RECORDER/issues"
+  },
   "main": "./out/main/index.js",
   "engines": {
     "node": ">=22.22.1"

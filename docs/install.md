@@ -1,6 +1,6 @@
 # Installing Ash Studio Recorder
 
-Download installers only from the project's **GitHub Releases** page. Each release
+Download installers only from the project's [**GitHub Releases**](https://github.com/ashrafmo-1/ASH-STUDIO-RECORDER/releases) page. Each release
 lists a SHA-256 checksum for every file, so you can check that a download was not
 altered (see [Verify your download](#verify-your-download)).
 

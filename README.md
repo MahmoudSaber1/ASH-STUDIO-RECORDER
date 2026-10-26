@@ -7,7 +7,7 @@ An open-source, cross-platform screen recorder and editor for macOS and Windows 
 ## Download
 
 Installers for macOS (Apple Silicon and Intel) and Windows are published on the
-project's GitHub Releases page. Download only from there.
+[GitHub Releases page](https://github.com/ashrafmo-1/ASH-STUDIO-RECORDER/releases). Download only from there.
 
 - [Install guide](docs/install.md), including the one-time macOS and Windows
   security prompts for this pre-release
