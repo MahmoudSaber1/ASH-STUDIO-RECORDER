@@ -61,6 +61,9 @@ export interface EditorStore {
   pxPerSecond: number
   waveform: Float32Array | null
   filmstrip: FilmFrame[]
+  /** Listening volume for the preview only. The project's mix is set in the Audio tab. */
+  previewVolume: number
+  previewMuted: boolean
   exportOpen: boolean
 
   load: (key: string) => Promise<void>
@@ -86,6 +89,8 @@ export interface EditorStore {
   removeRamp: (id: string) => void
   speedUpIdle: (minIdleMs: number, speed: number) => void
   skip: (deltaMs: number) => void
+  setPreviewVolume: (volume: number) => void
+  togglePreviewMuted: () => void
   addZoomAtPlayhead: () => void
   detectZoom: () => void
   updateZoom: (id: string, patch: Partial<ZoomSegment>) => void
@@ -169,6 +174,19 @@ const fadeFactor = (editor: EditorState, timelineMs: number, durationMs: number)
 const segmentAt = (segments: Segment[], timelineMs: number): Segment | null =>
   segments.find((segment) => timelineMs >= segment.start && timelineMs < segment.end) ?? null
 
+/** Replaces automatic segments with freshly detected ones and keeps manual ones. */
+const withDetectedZoom = (editor: EditorState, detected: ZoomSegment[]): EditorState => ({
+  ...editor,
+  zoom: {
+    ...editor.zoom,
+    detected: true,
+    segments: [
+      ...editor.zoom.segments.filter((segment) => segment.source === 'manual'),
+      ...detected
+    ].sort((a, b) => a.start - b.start)
+  }
+})
+
 export const useEditor = create<EditorStore>((set, get) => {
   const applySpeedAndAudio = (): void => {
     const { media, editor, playheadMs } = get()
@@ -183,7 +201,9 @@ export const useEditor = create<EditorStore>((set, get) => {
       // HTMLMediaElement.volume is capped at 1 in the preview. Exports can boost past it.
       const gain =
         rate === 1 ? editor.audio.micVolume * fadeFactor(editor, playheadMs, media.durationMs) : 0
-      media.mic.volume = Math.min(Math.max(gain, 0), 1)
+      const { previewVolume, previewMuted } = get()
+      const listening = previewMuted ? 0 : previewVolume
+      media.mic.volume = Math.min(Math.max(gain * listening, 0), 1)
     }
   }
 
@@ -269,6 +289,8 @@ export const useEditor = create<EditorStore>((set, get) => {
     pxPerSecond: 80,
     waveform: null,
     filmstrip: [],
+    previewVolume: 1,
+    previewMuted: false,
     exportOpen: false,
 
     load: async (key) => {
@@ -283,15 +305,29 @@ export const useEditor = create<EditorStore>((set, get) => {
           return
         }
 
+        let editor = project.editor
+        const autoZoom = !editor.zoom.detected && media.samples.hasCursor
+        if (autoZoom) {
+          editor = withDetectedZoom(
+            editor,
+            detectZoomSegments(media.samples.clicks, {
+              sensitivity: editor.zoom.sensitivity,
+              level: editor.zoom.level,
+              durationMs: media.durationMs
+            })
+          )
+        }
+
         set({
           project,
           media,
           status: 'ready',
-          editor: project.editor,
+          editor,
           past: [],
           future: [],
           saveStatus: 'saved'
         })
+        if (autoZoom) scheduleSave(get, set)
 
         const micFile = project.tracks.microphone?.fileName
         if (micFile) {
@@ -533,6 +569,16 @@ export const useEditor = create<EditorStore>((set, get) => {
       })
     },
 
+    setPreviewVolume: (volume) => {
+      set({ previewVolume: Math.min(Math.max(volume, 0), 1), previewMuted: false })
+      applySpeedAndAudio()
+    },
+
+    togglePreviewMuted: () => {
+      set((state) => ({ previewMuted: !state.previewMuted }))
+      applySpeedAndAudio()
+    },
+
     skip: (deltaMs) => {
       const { media, playheadMs } = get()
       if (!media) return
@@ -574,16 +620,7 @@ export const useEditor = create<EditorStore>((set, get) => {
         durationMs: media.durationMs
       })
 
-      get().update((current) => ({
-        ...current,
-        zoom: {
-          ...current.zoom,
-          segments: [
-            ...current.zoom.segments.filter((segment) => segment.source === 'manual'),
-            ...detected
-          ].sort((a, b) => a.start - b.start)
-        }
-      }))
+      get().update((current) => withDetectedZoom(current, detected))
       set({
         notice: `Found ${detected.length} zoom ${detected.length === 1 ? 'segment' : 'segments'}.`
       })

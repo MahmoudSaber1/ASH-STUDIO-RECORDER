@@ -107,8 +107,7 @@ in Settings. Warnings and errors are written to `main.log` in the app's logs fol
 | ⌘⇧P / Ctrl⇧P          | Pause or resume                   |
 | ⌘⇧S / Ctrl⇧S          | Stop recording                    |
 | Space                 | Play or pause in the editor       |
-| S                     | Split at the playhead             |
-| Delete / Backspace    | Remove the selected time          |
+| ← / →                 | Step 5 s in the editor (Shift: 1 s) |
 | ⌘Z / ⇧⌘Z              | Undo and redo                     |
 
 ### Project structure

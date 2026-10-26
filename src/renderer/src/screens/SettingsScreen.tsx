@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import type { SettingsInfo } from '@shared/settings'
 import { AppHeader } from '@renderer/components/AppHeader'
 import { NavTabs } from '@renderer/components/NavTabs'
+import { getThemePreference, setThemePreference, type ThemePreference } from '@renderer/lib/theme'
 
 export function SettingsScreen(): React.JSX.Element {
   const [info, setInfo] = useState<SettingsInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [theme, setTheme] = useState<ThemePreference>(getThemePreference)
 
   useEffect(() => {
     let active = true
@@ -86,6 +88,38 @@ export function SettingsScreen(): React.JSX.Element {
             </section>
 
             <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+              <h2 className="text-sm font-semibold text-zinc-100">Appearance</h2>
+              <p className="mt-1 text-xs text-zinc-500">
+                System follows your macOS or Windows setting.
+              </p>
+              <div
+                role="radiogroup"
+                aria-label="Theme"
+                className="mt-4 inline-flex rounded-lg border border-white/10 bg-black/20 p-0.5"
+              >
+                {(['system', 'light', 'dark'] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="radio"
+                    aria-checked={theme === option}
+                    onClick={() => {
+                      setThemePreference(option)
+                      setTheme(option)
+                    }}
+                    className={`rounded-md px-4 py-1.5 text-xs font-medium capitalize ${
+                      theme === option
+                        ? 'bg-white/[0.1] text-white'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
               <h2 className="text-sm font-semibold text-zinc-100">Diagnostics</h2>
               <p className="mt-1 text-xs text-zinc-500">
                 Warnings and errors are written to a local log file. Nothing is sent anywhere.
@@ -118,10 +152,8 @@ export function SettingsScreen(): React.JSX.Element {
                 <dd>Stop recording</dd>
                 <dt className="font-mono text-zinc-300">Space</dt>
                 <dd>Play or pause in the editor</dd>
-                <dt className="font-mono text-zinc-300">S</dt>
-                <dd>Split at playhead</dd>
-                <dt className="font-mono text-zinc-300">⌫</dt>
-                <dd>Remove selected time</dd>
+                <dt className="font-mono text-zinc-300">← / →</dt>
+                <dd>Step 5 s in the editor (Shift: 1 s)</dd>
                 <dt className="font-mono text-zinc-300">⌘Z / ⇧⌘Z</dt>
                 <dd>Undo and redo</dd>
               </dl>
