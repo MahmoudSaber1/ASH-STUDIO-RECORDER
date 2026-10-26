@@ -71,13 +71,7 @@ function ToggleRow({
   )
 }
 
-function SourcePreview({
-  target,
-  aspectRatio
-}: {
-  target: CaptureTarget
-  aspectRatio: number
-}): React.JSX.Element {
+function SourcePreview({ target }: { target: CaptureTarget }): React.JSX.Element {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [status, setStatus] = useState<'loading' | 'live' | 'error'>('loading')
   const [message, setMessage] = useState<string | null>(null)
@@ -118,10 +112,7 @@ function SourcePreview({
       <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
         Live preview {status === 'live' ? '· live' : ''}
       </p>
-      <div
-        className="relative mx-auto flex max-h-[340px] w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black"
-        style={{ aspectRatio }}
-      >
+      <div className="relative mx-auto flex aspect-video w-full max-w-[600px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black">
         <video
           ref={videoRef}
           muted
@@ -190,16 +181,13 @@ function SourceCard({
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      className={`group overflow-hidden rounded-xl border text-left transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
+      className={`group min-w-0 overflow-hidden rounded-xl border text-left transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
         selected
           ? 'border-violet-400/60 bg-violet-400/10 shadow-[0_0_0_1px_rgba(124,108,255,0.35)]'
           : 'border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]'
       }`}
     >
-      <div
-        className="relative flex w-full items-center justify-center overflow-hidden bg-black/50"
-        style={{ aspectRatio: source.aspectRatio ?? 16 / 9 }}
-      >
+      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-black">
         {source.thumbnail ? (
           <img
             src={source.thumbnail}
@@ -229,7 +217,11 @@ function SourceCard({
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         <span className="truncate text-xs text-zinc-300">{source.name}</span>
         <span className="shrink-0 rounded border border-white/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-zinc-500">
-          {source.kind === 'screen' ? 'Display' : 'Window'}
+          {source.kind === 'window'
+            ? 'Window'
+            : (source.aspectRatio ?? 1) < 1
+              ? 'Portrait'
+              : 'Display'}
         </span>
       </div>
     </button>
@@ -550,13 +542,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <section className="min-w-0">
                 {target && !isBusy && !isFinished ? (
-                  <SourcePreview
-                    key={target.id}
-                    target={target}
-                    aspectRatio={
-                      sources.find((source) => source.id === target.id)?.aspectRatio ?? 16 / 9
-                    }
-                  />
+                  <SourcePreview key={target.id} target={target} />
                 ) : null}
 
                 <div className="mb-3 flex items-center gap-1">
@@ -585,7 +571,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                 </div>
 
                 {sourcesStatus === 'loading' && visibleSources.length === 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
                     {[0, 1, 2, 3].map((item) => (
                       <div
                         key={item}
@@ -603,7 +589,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid max-h-[calc(100vh-16rem)] grid-cols-2 gap-3 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
                     {visibleSources.map((source) => (
                       <SourceCard
                         key={source.id}
