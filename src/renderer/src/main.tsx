@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from '@renderer/App'
+import { CameraBubble } from '@renderer/screens/CameraBubble'
 import { RecorderToolbar } from '@renderer/screens/RecorderToolbar'
 import '@renderer/styles/globals.css'
 
@@ -11,9 +12,13 @@ if (!container) {
 }
 
 const isToolbar = window.location.hash === '#toolbar'
+const isCamera = window.location.hash === '#camera'
 
-if (isToolbar) {
+// Floating windows have transparent backgrounds.
+if (isToolbar || isCamera) {
   document.documentElement.classList.add('toolbar-window')
 }
 
-createRoot(container).render(<StrictMode>{isToolbar ? <RecorderToolbar /> : <App />}</StrictMode>)
+const root = isCamera ? <CameraBubble /> : isToolbar ? <RecorderToolbar /> : <App />
+
+createRoot(container).render(<StrictMode>{root}</StrictMode>)

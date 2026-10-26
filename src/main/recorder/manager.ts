@@ -18,9 +18,11 @@ import {
   unregisterStartShortcut as unregisterGlobalStartShortcut
 } from '@main/shortcuts'
 import {
+  hideCameraBubble,
   hideRecorderToolbar,
   minimizeMainWindow,
   restoreMainWindow,
+  showCameraBubble,
   showRecorderToolbar
 } from '@main/window'
 import { ChunkWriter } from './chunk-writer'
@@ -262,6 +264,7 @@ export class RecorderManager {
       }).map(shortcutWarning)
     )
     showRecorderToolbar()
+    if (request.options.captureWebcam) showCameraBubble()
     minimizeMainWindow()
     this.startTimer(session)
     this.broadcast()
@@ -413,6 +416,7 @@ export class RecorderManager {
       if (session.stopTimeout) clearTimeout(session.stopTimeout)
       unregisterSessionShortcuts()
     }
+    hideCameraBubble()
     unregisterGlobalStartShortcut()
   }
 
@@ -492,6 +496,7 @@ export class RecorderManager {
     this.phase = status === 'completed' ? 'completed' : 'error'
     this.error = status === 'completed' ? null : (note ?? null)
     hideRecorderToolbar()
+    hideCameraBubble()
     restoreMainWindow()
     this.restoreStartShortcut()
     this.broadcast()

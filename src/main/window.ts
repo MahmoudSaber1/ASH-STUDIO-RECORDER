@@ -174,3 +174,73 @@ export function restoreMainWindow(): void {
   mainWindow.show()
   mainWindow.focus()
 }
+
+const CAMERA_BUBBLE_SIZE = 200
+
+let cameraWindow: BrowserWindow | null = null
+
+/**
+ * Floating camera preview shown while recording, so the speaker can see
+ * themselves. Content protection keeps it out of the screen capture: the camera
+ * is recorded as its own track and placed in the editor, never baked in.
+ * The window is destroyed afterwards so the camera light turns off.
+ */
+export function showCameraBubble(): void {
+  if (cameraWindow && !cameraWindow.isDestroyed()) {
+    cameraWindow.showInactive()
+    return
+  }
+
+  const { workArea } = screen.getPrimaryDisplay()
+  const margin = 24
+  const window = new BrowserWindow({
+    width: CAMERA_BUBBLE_SIZE,
+    height: CAMERA_BUBBLE_SIZE,
+    x: workArea.x + workArea.width - CAMERA_BUBBLE_SIZE - margin,
+    y: workArea.y + workArea.height - CAMERA_BUBBLE_SIZE - margin,
+    show: false,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: true,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    focusable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    hasShadow: false,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  })
+
+  window.setContentProtection(true)
+  window.setAlwaysOnTop(true, 'screen-saver')
+  window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  window.once('ready-to-show', () => {
+    window.showInactive()
+  })
+  window.on('closed', () => {
+    if (cameraWindow === window) cameraWindow = null
+  })
+
+  const devRendererUrl = process.env['ELECTRON_RENDERER_URL']
+  if (is.dev && devRendererUrl) {
+    void window.loadURL(`${devRendererUrl}#camera`)
+  } else {
+    void window.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'camera' })
+  }
+
+  cameraWindow = window
+}
+
+export function hideCameraBubble(): void {
+  if (!cameraWindow || cameraWindow.isDestroyed()) return
+  cameraWindow.destroy()
+  cameraWindow = null
+}
