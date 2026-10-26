@@ -8,6 +8,7 @@ export function SettingsScreen(): React.JSX.Element {
   const [info, setInfo] = useState<SettingsInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [theme, setTheme] = useState<ThemePreference>(getThemePreference)
+  const [confirmReset, setConfirmReset] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -139,6 +140,47 @@ export function SettingsScreen(): React.JSX.Element {
               >
                 Open logs folder
               </button>
+            </section>
+
+            <section className="rounded-2xl border border-rose-400/20 bg-rose-400/[0.04] p-5">
+              <h2 className="text-sm font-semibold text-zinc-100">Reset app</h2>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                Deletes preferences, setup progress, saved options and logs, then restarts. Your
+                recordings in {info.effectiveRecordingsFolder} are kept. Use this before
+                uninstalling to leave nothing behind.
+              </p>
+              {confirmReset ? (
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void window.api.app.resetData()
+                    }}
+                    className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-400"
+                  >
+                    Reset and restart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmReset(false)
+                    }}
+                    className="rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmReset(true)
+                  }}
+                  className="mt-4 rounded-lg border border-rose-400/30 px-3 py-1.5 text-xs text-rose-300 hover:bg-rose-400/10"
+                >
+                  Reset app…
+                </button>
+              )}
             </section>
 
             <section className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">

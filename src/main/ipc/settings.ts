@@ -1,9 +1,10 @@
-import { app, BrowserWindow, dialog, shell } from 'electron'
+import { rm } from 'node:fs/promises'
+import { app, BrowserWindow, dialog, session, shell } from 'electron'
 import { join } from 'node:path'
 import { IPC_CHANNELS } from '@shared/ipc'
 import type { SettingsInfo } from '@shared/settings'
 import { getRecordingsRoot } from '@main/recorder/paths'
-import { loadSettings, saveSettings } from '@main/settings'
+import { DEFAULT_SETTINGS, loadSettings, saveSettings } from '@main/settings'
 import { handleIpc } from './handle'
 
 const info = async (): Promise<SettingsInfo> => ({
@@ -13,6 +14,16 @@ const info = async (): Promise<SettingsInfo> => ({
 })
 
 export function registerSettingsHandlers(): void {
+  // Removes everything the app keeps about itself: preferences, window and page
+  // storage, and logs. Recordings live in their own folder and are never touched.
+  handleIpc(IPC_CHANNELS.appResetData, async () => {
+    await session.defaultSession.clearStorageData()
+    await saveSettings({ ...DEFAULT_SETTINGS })
+    await rm(app.getPath('logs'), { recursive: true, force: true })
+    app.relaunch()
+    app.quit()
+  })
+
   handleIpc(IPC_CHANNELS.settingsGet, () => info())
 
   handleIpc(IPC_CHANNELS.settingsChooseRecordingsFolder, async () => {

@@ -98,6 +98,24 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
           ))}
         </div>
 
+        {appInfo?.platform === 'darwin' ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/[0.025] px-4 py-3">
+            <p className="max-w-md text-xs leading-relaxed text-zinc-400">
+              macOS applies Screen Recording and Accessibility only after the app restarts. Granted
+              one just now? Restart to use it.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                void window.api.app.relaunch()
+              }}
+              className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-white/[0.06]"
+            >
+              Restart app
+            </button>
+          </div>
+        ) : null}
+
         {appInfo?.platform === 'darwin' && !appInfo.isPackaged ? (
           <p className="mt-4 rounded-xl border border-sky-400/20 bg-sky-400/10 px-4 py-3 text-xs leading-relaxed text-sky-100">
             Development build: macOS gives these permissions to the app that started this one (for

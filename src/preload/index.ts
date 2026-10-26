@@ -50,7 +50,9 @@ const api: StudioApi = {
     importBackground: (key) => invoke(IPC_CHANNELS.projectImportBackground, key)
   },
   app: {
-    getInfo: () => invoke(IPC_CHANNELS.appGetInfo)
+    getInfo: () => invoke(IPC_CHANNELS.appGetInfo),
+    relaunch: () => invoke(IPC_CHANNELS.appRelaunch),
+    resetData: () => invoke(IPC_CHANNELS.appResetData)
   },
   platform: {
     getCapabilities: () => invoke(IPC_CHANNELS.platformGetCapabilities),

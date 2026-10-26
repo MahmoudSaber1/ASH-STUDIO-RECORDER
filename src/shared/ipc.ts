@@ -18,6 +18,8 @@ export * from './recorder'
 
 export const IPC_CHANNELS = {
   appGetInfo: 'app:get-info',
+  appRelaunch: 'app:relaunch',
+  appResetData: 'app:reset-data',
   platformGetCapabilities: 'platform:get-capabilities',
   platformGetPermissions: 'platform:get-permissions',
   platformRequestPermission: 'platform:request-permission',
@@ -65,6 +67,8 @@ export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS]
 
 export interface IpcContract {
   [IPC_CHANNELS.appGetInfo]: { args: []; result: AppInfo }
+  [IPC_CHANNELS.appRelaunch]: { args: []; result: void }
+  [IPC_CHANNELS.appResetData]: { args: []; result: void }
   [IPC_CHANNELS.platformGetCapabilities]: { args: []; result: PlatformCapabilities }
   [IPC_CHANNELS.platformGetPermissions]: { args: []; result: PermissionState[] }
   [IPC_CHANNELS.platformRequestPermission]: {
@@ -125,6 +129,10 @@ export interface IpcContract {
 export interface StudioApi {
   app: {
     getInfo: () => Promise<AppInfo>
+    /** Restarts the app, which macOS needs after granting screen or accessibility access. */
+    relaunch: () => Promise<void>
+    /** Deletes settings, logs and local state (never recordings), then restarts. */
+    resetData: () => Promise<void>
   }
   platform: {
     getCapabilities: () => Promise<PlatformCapabilities>

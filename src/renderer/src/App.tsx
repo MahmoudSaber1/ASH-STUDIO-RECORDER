@@ -5,10 +5,18 @@ import { LibraryScreen } from '@renderer/screens/LibraryScreen'
 import { SettingsScreen } from '@renderer/screens/SettingsScreen'
 import { RecorderScreen } from '@renderer/screens/RecorderScreen'
 import { SetupScreen } from '@renderer/screens/SetupScreen'
+import { ReadyScreen, WelcomeScreen } from '@renderer/screens/OnboardingScreens'
+import {
+  getSavedOnboardingStep,
+  isOnboardingDone,
+  markOnboardingDone,
+  saveOnboardingStep
+} from '@renderer/lib/onboarding'
 import { usePlatformStore } from '@renderer/stores/platform'
 import { useNavigation } from '@renderer/stores/navigation'
 
-type View = 'setup' | 'home'
+/** First run: welcome, permissions, ready. Later the permission screen opens as a system check. */
+type View = 'welcome' | 'setup' | 'ready' | 'check' | 'home'
 
 function BootScreen(): React.JSX.Element {
   return (
@@ -57,7 +65,9 @@ export default function App(): React.JSX.Element {
   const status = usePlatformStore((state) => state.status)
   const error = usePlatformStore((state) => state.error)
   const load = usePlatformStore((state) => state.load)
-  const [view, setView] = useState<View>('setup')
+  const [view, setView] = useState<View>(() =>
+    isOnboardingDone() ? 'home' : getSavedOnboardingStep()
+  )
   const route = useNavigation((state) => state.route)
 
   useEffect(() => {
@@ -79,13 +89,36 @@ export default function App(): React.JSX.Element {
     )
   }
 
-  if (view === 'setup') {
+  if (view === 'welcome') {
+    return (
+      <WelcomeScreen
+        onNext={() => {
+          saveOnboardingStep('setup')
+          setView('setup')
+        }}
+      />
+    )
+  }
+
+  if (view === 'setup' || view === 'check') {
+    const next = view === 'setup' ? 'ready' : 'home'
     return (
       <SetupScreen
         onContinue={() => {
-          setView('home')
+          setView(next)
         }}
         onSkip={() => {
+          setView(next)
+        }}
+      />
+    )
+  }
+
+  if (view === 'ready') {
+    return (
+      <ReadyScreen
+        onFinish={() => {
+          markOnboardingDone()
           setView('home')
         }}
       />
@@ -107,7 +140,7 @@ export default function App(): React.JSX.Element {
   return (
     <RecorderScreen
       onOpenSetup={() => {
-        setView('setup')
+        setView('check')
       }}
     />
   )

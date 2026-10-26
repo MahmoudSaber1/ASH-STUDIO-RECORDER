@@ -171,6 +171,12 @@ export function registerIpcHandlers(): void {
     }
   })
 
+  handleIpc(IPC_CHANNELS.appRelaunch, () => {
+    // Goes through the normal quit path, so an active recording is saved first.
+    app.relaunch()
+    app.quit()
+  })
+
   handleIpc(IPC_CHANNELS.platformGetCapabilities, () => platform.capabilities)
 
   handleIpc(IPC_CHANNELS.platformGetPermissions, () => platform.getPermissions())
