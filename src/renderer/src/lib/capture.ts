@@ -16,6 +16,23 @@ export interface CaptureSession {
   systemAudio: boolean
 }
 
+/**
+ * Live feed of one display or window for the source picker. Unlike recording,
+ * the cursor is shown, so the preview matches what the user is pointing at.
+ */
+export const openSourcePreview = (target: CaptureTarget): Promise<MediaStream> =>
+  navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: {
+      mandatory: {
+        chromeMediaSource: 'desktop',
+        chromeMediaSourceId: target.id,
+        maxFrameRate: 30,
+        cursor: 'always'
+      }
+    }
+  } as unknown as MediaStreamConstraints)
+
 export const describeCaptureError = (error: unknown): string => {
   if (error instanceof DOMException) {
     switch (error.name) {

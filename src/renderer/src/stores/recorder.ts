@@ -101,7 +101,8 @@ export const useRecorderStore = create<RecorderStore>((set, get) => ({
       const sources = await window.api.platform.getSources({
         kinds: ['screen', 'window'],
         thumbnails: true,
-        thumbnailSize: { width: 400, height: 225 },
+        // Large enough for portrait displays; cards letterbox to the real aspect.
+        thumbnailSize: { width: 640, height: 640 },
         fetchWindowIcons: true
       })
 

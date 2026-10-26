@@ -122,13 +122,24 @@ export abstract class BasePlatformService implements PlatformService {
         : undefined
     const isScreen = this.isScreen(source)
 
+    const display = isScreen
+      ? displays.find((item) => String(item.id) === source.display_id)
+      : undefined
+    const size = source.thumbnail.getSize()
+    const aspectRatio = display
+      ? display.bounds.width / display.bounds.height
+      : size.height > 0
+        ? size.width / size.height
+        : undefined
+
     return {
       id: source.id,
       name: isScreen ? this.displayLabel(source, displays) : source.name.trim(),
       kind: isScreen ? 'screen' : 'window',
       ...(source.display_id ? { displayId: source.display_id } : {}),
       ...(thumbnail ? { thumbnail } : {}),
-      ...(appIcon ? { appIcon } : {})
+      ...(appIcon ? { appIcon } : {}),
+      ...(aspectRatio ? { aspectRatio } : {})
     }
   }
 }

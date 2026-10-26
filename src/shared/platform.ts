@@ -31,6 +31,8 @@ export interface CaptureSource {
   displayId?: string
   thumbnail?: string
   appIcon?: string
+  /** Width divided by height of the source, so cards can show the real shape. */
+  aspectRatio?: number
 }
 
 export interface CaptureSourcesOptions {

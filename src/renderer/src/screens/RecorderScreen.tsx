@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
-import type { CaptureSource, RecorderTrack } from '@shared/ipc'
+import { useEffect, useRef, useState } from 'react'
+import type { CaptureSource, CaptureTarget, PermissionKind, RecorderTrack } from '@shared/ipc'
 import { AppHeader } from '@renderer/components/AppHeader'
 import { NavTabs } from '@renderer/components/NavTabs'
 import { useNavigation } from '@renderer/stores/navigation'
 import { formatDuration } from '@renderer/lib/format'
+import { describeCaptureError, openSourcePreview } from '@renderer/lib/capture'
 import { usePlatformStore } from '@renderer/stores/platform'
 import { useRecorderStore } from '@renderer/stores/recorder'
 
@@ -46,16 +47,96 @@ function ToggleRow({
         aria-label={title}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
+        className={`relative mt-0.5 box-border h-5 w-9 shrink-0 overflow-hidden rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
           checked ? 'border-violet-400/40 bg-violet-500' : 'border-white/10 bg-white/[0.06]'
         } disabled:cursor-not-allowed`}
       >
         <span
-          className={`absolute top-0.5 size-3.5 rounded-full bg-white shadow transition-transform ${
-            checked ? 'translate-x-[18px]' : 'translate-x-0.5'
-          }`}
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: 2,
+            left: 2,
+            width: 14,
+            height: 14,
+            borderRadius: 9999,
+            background: '#fff',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+            transform: checked ? 'translateX(16px)' : 'translateX(0)',
+            transition: 'transform 150ms ease'
+          }}
         />
       </button>
+    </div>
+  )
+}
+
+function SourcePreview({
+  target,
+  aspectRatio
+}: {
+  target: CaptureTarget
+  aspectRatio: number
+}): React.JSX.Element {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [status, setStatus] = useState<'loading' | 'live' | 'error'>('loading')
+  const [message, setMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    let cancelled = false
+    let stream: MediaStream | null = null
+
+    openSourcePreview(target)
+      .then((next) => {
+        if (cancelled) {
+          next.getTracks().forEach((track) => track.stop())
+          return
+        }
+        stream = next
+        if (video) {
+          video.srcObject = next
+          void video.play().catch(() => undefined)
+        }
+        setStatus('live')
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        setMessage(describeCaptureError(error))
+        setStatus('error')
+      })
+
+    return () => {
+      cancelled = true
+      stream?.getTracks().forEach((track) => track.stop())
+      if (video) video.srcObject = null
+    }
+  }, [target])
+
+  return (
+    <div className="mb-5">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+        Live preview {status === 'live' ? '· live' : ''}
+      </p>
+      <div
+        className="relative mx-auto flex max-h-[340px] w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black"
+        style={{ aspectRatio }}
+      >
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          aria-label={`Live preview of ${target.name}`}
+          className="size-full object-contain"
+        />
+        {status !== 'live' ? (
+          <p className="absolute px-6 text-center text-xs text-zinc-400">
+            {status === 'loading'
+              ? 'Connecting to the source…'
+              : (message ?? 'Preview unavailable')}
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -115,12 +196,15 @@ function SourceCard({
           : 'border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]'
       }`}
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-black/50">
+      <div
+        className="relative flex w-full items-center justify-center overflow-hidden bg-black/50"
+        style={{ aspectRatio: source.aspectRatio ?? 16 / 9 }}
+      >
         {source.thumbnail ? (
           <img
             src={source.thumbnail}
             alt=""
-            className={`size-full object-cover transition-transform duration-300 ${
+            className={`size-full object-contain transition-transform duration-300 ${
               selected ? 'scale-[1.02]' : 'group-hover:scale-[1.02]'
             }`}
           />
@@ -184,6 +268,47 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
   const capabilities = usePlatformStore((state) => state.capabilities)
 
   const [kind, setKind] = useState<'screen' | 'window'>('screen')
+  const [deviceNotice, setDeviceNotice] = useState<{
+    kind: PermissionKind
+    message: string
+  } | null>(null)
+  const requestPermission = usePlatformStore((state) => state.requestPermission)
+
+  /**
+   * Turning a device on asks the OS for access first. Without this step the
+   * toggle could be on while the capture quietly fails.
+   */
+  const setDevice = async (device: 'camera' | 'microphone', on: boolean): Promise<void> => {
+    setDeviceNotice(null)
+    const enable = (value: boolean): void => {
+      if (device === 'camera') updateOptions({ captureWebcam: value })
+      else updateOptions({ captureMicrophone: value })
+    }
+
+    if (!on) {
+      enable(false)
+      return
+    }
+
+    await requestPermission(device)
+    const status = usePlatformStore
+      .getState()
+      .permissions.find((item) => item.kind === device)?.status
+
+    if (status === 'granted' || status === 'unknown') {
+      enable(true)
+      return
+    }
+
+    enable(false)
+    setDeviceNotice({
+      kind: device,
+      message:
+        status === 'not-determined'
+          ? 'macOS did not show the permission prompt. Open system settings, allow the app, then try again.'
+          : `${device === 'camera' ? 'Camera' : 'Microphone'} access is off, so the track was not turned on.`
+    })
+  }
 
   const screenReady = permissions.some(
     (permission) => permission.kind === 'screen' && permission.status === 'granted'
@@ -424,6 +549,16 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <section className="min-w-0">
+                {target && !isBusy && !isFinished ? (
+                  <SourcePreview
+                    key={target.id}
+                    target={target}
+                    aspectRatio={
+                      sources.find((source) => source.id === target.id)?.aspectRatio ?? 16 / 9
+                    }
+                  />
+                ) : null}
+
                 <div className="mb-3 flex items-center gap-1">
                   <button
                     type="button"
@@ -515,15 +650,36 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                       title="Camera"
                       description="Record a separate webcam track you can place later."
                       checked={options.captureWebcam}
-                      onChange={(captureWebcam) => updateOptions({ captureWebcam })}
+                      onChange={(on) => {
+                        void setDevice('camera', on)
+                      }}
                     />
 
                     <ToggleRow
                       title="Microphone"
                       description="Record narration on its own audio track."
                       checked={options.captureMicrophone}
-                      onChange={(captureMicrophone) => updateOptions({ captureMicrophone })}
+                      onChange={(on) => {
+                        void setDevice('microphone', on)
+                      }}
                     />
+                    {deviceNotice ? (
+                      <div
+                        role="alert"
+                        className="rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-[11px] leading-relaxed text-amber-100"
+                      >
+                        <p>{deviceNotice.message}</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void window.api.platform.openPermissionSettings(deviceNotice.kind)
+                          }}
+                          className="mt-2 rounded-md border border-amber-300/40 px-2 py-1 text-[11px] font-medium text-amber-100 hover:bg-amber-300/10"
+                        >
+                          Open system settings
+                        </button>
+                      </div>
+                    ) : null}
 
                     <ToggleRow
                       title="System audio"
