@@ -46,7 +46,8 @@ const api: StudioApi = {
     getThumbnail: (key) => invoke(IPC_CHANNELS.projectGetThumbnail, key),
     import: () => invoke(IPC_CHANNELS.projectImport),
     export: (key) => invoke(IPC_CHANNELS.projectExport, key),
-    reveal: (key) => invoke(IPC_CHANNELS.projectReveal, key)
+    reveal: (key) => invoke(IPC_CHANNELS.projectReveal, key),
+    importBackground: (key) => invoke(IPC_CHANNELS.projectImportBackground, key)
   },
   app: {
     getInfo: () => invoke(IPC_CHANNELS.appGetInfo)

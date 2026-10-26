@@ -17,6 +17,9 @@ const MIME_TYPES: Record<string, string> = {
   '.webm': 'video/webm',
   '.mp4': 'video/mp4',
   '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
   '.jsonl': 'text/plain; charset=utf-8',
   '.json': 'application/json'
 }

@@ -3,6 +3,8 @@ import { outputSize, RESOLUTION_HEIGHTS, type ResolutionPreset } from '@shared/o
 import type { ExportAudioSettings, ExportFormat, ExportSettings } from '@shared/export'
 import type { EditorState, ProjectFile } from '@shared/project'
 import { drawFrame } from './render'
+import { loadBackgroundImage } from './backgrounds'
+import { mediaUrl } from '@shared/media'
 import type { ProjectMedia } from './project-media'
 
 export interface ExportOptions {
@@ -63,6 +65,12 @@ export const runExport = async (args: {
     audio
   }
 
+  const assetUrl = (fileName: string): string => mediaUrl(args.key, fileName)
+  // Every frame must have its background, so wait for an image background first.
+  if (editor.background.kind === 'image') {
+    await loadBackgroundImage(assetUrl(editor.background.fileName))
+  }
+
   const id = await window.api.exporter.start(settings)
   if (!id) return null
 
@@ -76,7 +84,15 @@ export const runExport = async (args: {
       await media.seekScreen(sourceMs)
       await media.seekWebcam(sourceMs)
 
-      drawFrame({ ctx, width: size.width, height: size.height, timeMs: sourceMs, editor, media })
+      drawFrame({
+        ctx,
+        width: size.width,
+        height: size.height,
+        timeMs: sourceMs,
+        editor,
+        media,
+        assetUrl
+      })
 
       const pixels = ctx.getImageData(0, 0, size.width, size.height).data.buffer
       await window.api.exporter.frame(id, pixels)

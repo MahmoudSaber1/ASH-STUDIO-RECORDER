@@ -1,13 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import type {
-  AspectPreset,
-  Background,
-  EditorState,
-  FaceCamAnchor,
-  FaceCamShape
-} from '@shared/project'
+import type { AspectPreset, EditorState, FaceCamAnchor, FaceCamShape } from '@shared/project'
 import { useEditor } from '@renderer/stores/editor'
 import { SpeedPanel } from './SpeedPanel'
+import { BackgroundPanel } from './BackgroundPanel'
 
 type Tab = 'zoom' | 'speed' | 'cursor' | 'background' | 'frame' | 'facecam' | 'audio'
 
@@ -363,109 +358,7 @@ export function Inspector({
           </Section>
         ) : null}
 
-        {tab === 'background' ? (
-          <Section title="Background">
-            <Choice<Background['kind']>
-              label="Type"
-              value={editor.background.kind}
-              options={[
-                { value: 'gradient', label: 'Gradient' },
-                { value: 'solid', label: 'Solid color' }
-              ]}
-              onChange={(kind) => {
-                set((current) => ({
-                  ...current,
-                  background:
-                    kind === 'solid'
-                      ? { kind: 'solid', color: '#1b1b2f' }
-                      : { kind: 'gradient', from: '#1b1b2f', to: '#4c3fb3', angle: 135 }
-                }))
-              }}
-            />
-            {editor.background.kind === 'solid' ? (
-              <label className="flex items-center justify-between text-xs text-zinc-300">
-                Color
-                <input
-                  type="color"
-                  value={editor.background.color}
-                  onChange={(event) => {
-                    set(
-                      (current) => ({
-                        ...current,
-                        background: { kind: 'solid', color: event.target.value }
-                      }),
-                      'bg-color'
-                    )
-                  }}
-                  className="size-8 cursor-pointer rounded border border-white/10 bg-transparent"
-                />
-              </label>
-            ) : (
-              <>
-                <label className="flex items-center justify-between text-xs text-zinc-300">
-                  From
-                  <input
-                    type="color"
-                    value={editor.background.from}
-                    onChange={(event) => {
-                      set(
-                        (current) => ({
-                          ...current,
-                          background: {
-                            ...(current.background as Extract<Background, { kind: 'gradient' }>),
-                            from: event.target.value
-                          }
-                        }),
-                        'bg-from'
-                      )
-                    }}
-                    className="size-8 cursor-pointer rounded border border-white/10 bg-transparent"
-                  />
-                </label>
-                <label className="flex items-center justify-between text-xs text-zinc-300">
-                  To
-                  <input
-                    type="color"
-                    value={editor.background.to}
-                    onChange={(event) => {
-                      set(
-                        (current) => ({
-                          ...current,
-                          background: {
-                            ...(current.background as Extract<Background, { kind: 'gradient' }>),
-                            to: event.target.value
-                          }
-                        }),
-                        'bg-to'
-                      )
-                    }}
-                    className="size-8 cursor-pointer rounded border border-white/10 bg-transparent"
-                  />
-                </label>
-                <Slider
-                  label="Angle"
-                  value={editor.background.angle}
-                  min={0}
-                  max={360}
-                  step={1}
-                  format={(value) => `${Math.round(value)}°`}
-                  onChange={(angle) => {
-                    set(
-                      (current) => ({
-                        ...current,
-                        background: {
-                          ...(current.background as Extract<Background, { kind: 'gradient' }>),
-                          angle
-                        }
-                      }),
-                      'bg-angle'
-                    )
-                  }}
-                />
-              </>
-            )}
-          </Section>
-        ) : null}
+        {tab === 'background' ? <BackgroundPanel /> : null}
 
         {tab === 'frame' ? (
           <Section title="Frame">

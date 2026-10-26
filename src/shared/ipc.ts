@@ -45,6 +45,7 @@ export const IPC_CHANNELS = {
   projectImport: 'projects:import',
   projectExport: 'projects:export',
   projectReveal: 'projects:reveal',
+  projectImportBackground: 'projects:import-background',
   exportStart: 'export:start',
   exportFrame: 'export:frame',
   exportFinish: 'export:finish',
@@ -109,6 +110,7 @@ export interface IpcContract {
   [IPC_CHANNELS.projectImport]: { args: []; result: string | null }
   [IPC_CHANNELS.projectExport]: { args: [key: string]; result: string | null }
   [IPC_CHANNELS.projectReveal]: { args: [key: string]; result: boolean }
+  [IPC_CHANNELS.projectImportBackground]: { args: [key: string]; result: string | null }
   [IPC_CHANNELS.exportStart]: { args: [settings: ExportSettings]; result: string | null }
   [IPC_CHANNELS.exportFrame]: { args: [id: string, frame: ArrayBuffer]; result: void }
   [IPC_CHANNELS.exportFinish]: { args: [id: string]; result: string }
@@ -157,6 +159,8 @@ export interface StudioApi {
     import: () => Promise<string | null>
     export: (key: string) => Promise<string | null>
     reveal: (key: string) => Promise<boolean>
+    /** Asks for an image and copies it into the project. Returns its file name. */
+    importBackground: (key: string) => Promise<string | null>
   }
   recorder: {
     start: (request: RecorderStartRequest) => Promise<RecorderState>

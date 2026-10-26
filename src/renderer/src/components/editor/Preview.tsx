@@ -1,7 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { drawFrame } from '@renderer/lib/render'
 import { useEditor } from '@renderer/stores/editor'
 import { outputSize } from '@shared/output'
+import { mediaUrl } from '@shared/media'
+import { loadBackgroundImage } from '@renderer/lib/backgrounds'
 
 const PREVIEW_HEIGHT = 540
 
@@ -15,6 +17,26 @@ export function Preview(): React.JSX.Element {
   const editor = useEditor((state) => state.editor)
   const playheadMs = useEditor((state) => state.playheadMs)
   const frameVersion = useEditor((state) => state.frameVersion)
+  const projectKey = useEditor((state) => state.key)
+  const [assetVersion, setAssetVersion] = useState(0)
+
+  const background = editor.background
+  const backgroundUrl =
+    background.kind === 'image' && projectKey ? mediaUrl(projectKey, background.fileName) : null
+
+  // Image backgrounds load asynchronously; redraw once the image is ready.
+  useEffect(() => {
+    if (!backgroundUrl) return
+    let active = true
+    loadBackgroundImage(backgroundUrl)
+      .then(() => {
+        if (active) setAssetVersion((value) => value + 1)
+      })
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [backgroundUrl])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -34,9 +56,10 @@ export function Preview(): React.JSX.Element {
       height: size.height,
       timeMs: playheadMs,
       editor,
-      media
+      media,
+      assetUrl: (fileName) => mediaUrl(projectKey ?? '', fileName)
     })
-  }, [media, editor, playheadMs, frameVersion])
+  }, [media, editor, playheadMs, frameVersion, projectKey, assetVersion])
 
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/8 bg-black/40 p-4">

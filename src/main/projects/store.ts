@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { cp, mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { basename, extname, join } from 'node:path'
 import {
+  BACKGROUND_FILE_PATTERN,
   normalizeEditor,
   parseProject,
   PROJECT_FILE_NAME,
@@ -220,7 +221,8 @@ export const resolveMediaPath = async (
   const project = await readProject(root, key)
   const listed =
     Object.values(project.tracks).some((track) => track?.fileName === fileName) ||
-    project.events.fileName === fileName
+    project.events.fileName === fileName ||
+    BACKGROUND_FILE_PATTERN.test(fileName)
 
   return listed ? join(projectDir(root, key), fileName) : null
 }
@@ -234,4 +236,36 @@ export const deleteProjectToTrash = async (
   const dir = projectDir(root, key)
   await stat(join(dir, PROJECT_FILE_NAME))
   await moveToTrash(dir)
+}
+
+const DIRECT_IMAGE_TYPES = new Set(['.png', '.jpg', '.jpeg', '.webp'])
+
+/**
+ * Copies a background image into the project folder so the project stays
+ * self-contained. Formats the renderer cannot decode (such as HEIC wallpapers on
+ * macOS) go through `convertToJpeg`, which the caller provides per platform.
+ */
+export const importBackgroundImage = async (
+  root: string,
+  key: string,
+  sourcePath: string,
+  convertToJpeg: ((source: string, target: string) => Promise<void>) | null
+): Promise<string> => {
+  const dir = projectDir(root, key)
+  await stat(join(dir, PROJECT_FILE_NAME))
+
+  const extension = extname(sourcePath).toLowerCase()
+  const id = Date.now().toString(36)
+
+  if (DIRECT_IMAGE_TYPES.has(extension)) {
+    const fileName = `background-${id}${extension === '.jpeg' ? '.jpg' : extension}`
+    await cp(sourcePath, join(dir, fileName))
+    return fileName
+  }
+
+  if (!convertToJpeg)
+    throw new ProjectError('This image format is not supported. Use PNG, JPG or WebP.')
+  const fileName = `background-${id}.jpg`
+  await convertToJpeg(sourcePath, join(dir, fileName))
+  return fileName
 }
