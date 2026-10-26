@@ -1,8 +1,10 @@
+import { join } from 'node:path'
 import { app } from 'electron'
 import { installFileLogger } from '@main/logger'
 import { registerMediaProtocol, registerMediaScheme } from '@main/media/protocol'
 import { loadSettings } from '@main/settings'
 import { installTray } from '@main/tray'
+import { installSecurityGuards } from '@main/security'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { IPC_EVENTS } from '@shared/ipc'
 import { registerIpcHandlers } from '@main/ipc'
@@ -20,6 +22,14 @@ import {
 const QUIT_SAVE_TIMEOUT_MS = 10_000
 
 let quitAfterSave = false
+
+// Automated tests run with their own profile, so they never touch the user's
+// settings and never collide with an instance the user already has open.
+const isolatedUserData = process.env['ASH_USER_DATA_DIR']?.trim()
+if (isolatedUserData) {
+  app.setPath('userData', isolatedUserData)
+  app.setAppLogsPath(join(isolatedUserData, 'logs'))
+}
 
 // Custom schemes must be declared before the app is ready.
 registerMediaScheme()
@@ -40,6 +50,7 @@ if (!gotSingleInstanceLock) {
 
   void app.whenReady().then(() => {
     installFileLogger()
+    installSecurityGuards()
     registerMediaProtocol()
     void loadSettings()
     electronApp.setAppUserModelId('com.ashstudio.recorder')
