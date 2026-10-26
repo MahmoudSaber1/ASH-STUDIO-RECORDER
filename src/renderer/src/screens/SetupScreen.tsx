@@ -51,7 +51,7 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
     <div className="relative flex min-h-screen flex-1 flex-col">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(124,108,255,0.16),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(166,234,0,0.16),transparent_55%)]"
       />
 
       <AppHeader>
@@ -62,8 +62,8 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
 
       <main className="relative z-10 mx-auto w-full max-w-3xl flex-1 px-6 pb-16 pt-6">
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs font-medium text-violet-200">
-            <span className="size-1.5 rounded-full bg-violet-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-400/20 bg-brand-400/10 px-3 py-1 text-xs font-medium text-brand-200">
+            <span className="size-1.5 rounded-full bg-brand-400" />
             System check
           </div>
           <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight text-white">
@@ -136,7 +136,7 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
             type="button"
             onClick={onContinue}
             disabled={!ready}
-            className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+            className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
           >
             Continue
           </button>
@@ -148,7 +148,7 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
             }}
             disabled={refreshing}
             aria-busy={refreshing}
-            className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+            className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
           >
             {refreshing ? 'Checking…' : 'Recheck permissions'}
           </button>
@@ -156,7 +156,7 @@ export function SetupScreen({ onContinue, onSkip }: SetupScreenProps): React.JSX
           <button
             type="button"
             onClick={onSkip}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
           >
             Skip for now
           </button>

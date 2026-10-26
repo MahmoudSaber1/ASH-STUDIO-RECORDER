@@ -4,9 +4,23 @@
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  --color-canvas: #0b0b0f;
-  --color-panel: #121218;
-  --color-accent: #7c6cff;
+  --color-canvas: #000000;
+  --color-panel: #0e0e0e;
+  --color-accent: #a6ea00;
+
+  /* Brand lime, from the Ash logo: #A6EA00 at the top of its gradient and
+     #75E900 at the bottom. Text on solid brand surfaces is black. */
+  --color-brand-50: #f7ffe0;
+  --color-brand-100: #eeffbf;
+  --color-brand-200: #dcfb88;
+  --color-brand-300: #c6f545;
+  --color-brand-400: #b4f01a;
+  --color-brand-500: #a6ea00;
+  --color-brand-600: #75e900;
+  --color-brand-700: #5c9a00;
+  --color-brand-800: #47770a;
+  --color-brand-900: #36590c;
+  --color-brand-950: #1b3000;
 }
 
 html,
@@ -18,7 +32,7 @@ body,
 body {
   margin: 0;
   background-color: var(--color-canvas);
-  color: #e7e7ef;
+  color: #f2f2f2;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -49,7 +63,7 @@ body {
  */
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-canvas: #f5f5f8;
+  --color-canvas: #f7f7f5;
   --color-panel: #ffffff;
   --color-white: oklch(21% 0.006 285.885);
   --color-black: #ffffff;
@@ -66,9 +80,9 @@ body {
   --color-zinc-900: oklch(96.7% 0.001 286.375);
   --color-zinc-950: oklch(98.5% 0 none);
 
-  --color-violet-100: oklch(43.2% 0.232 292.759);
-  --color-violet-200: oklch(49.1% 0.27 292.581);
-  --color-violet-300: oklch(54.1% 0.281 293.009);
+  --color-brand-100: #36590c;
+  --color-brand-200: #47770a;
+  --color-brand-300: #5c9a00;
   --color-rose-100: oklch(45.5% 0.188 13.697);
   --color-rose-200: oklch(51.4% 0.222 16.935);
   --color-rose-300: oklch(58.6% 0.253 17.585);
@@ -87,10 +101,14 @@ body {
   color: oklch(21% 0.006 285.885);
 }
 
-/* Text on solid accent buttons stays white in both themes. */
-:root[data-theme='light'] .bg-violet-500,
+/* Text on the solid brand lime is black in both themes, as in the logo.
+   Red buttons keep white text. */
+.bg-brand-500,
+.bg-brand-500 * {
+  color: #000000;
+}
+
 :root[data-theme='light'] .bg-rose-500,
-:root[data-theme='light'] .bg-violet-500 *,
 :root[data-theme='light'] .bg-rose-500 * {
   color: #ffffff;
 }

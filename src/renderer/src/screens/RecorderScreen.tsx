@@ -47,8 +47,8 @@ function ToggleRow({
         aria-label={title}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={`relative mt-0.5 box-border h-5 w-9 shrink-0 overflow-hidden rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
-          checked ? 'border-violet-400/40 bg-violet-500' : 'border-white/10 bg-white/[0.06]'
+        className={`relative mt-0.5 box-border h-5 w-9 shrink-0 overflow-hidden rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
+          checked ? 'border-brand-400/40 bg-brand-500' : 'border-white/10 bg-white/[0.06]'
         } disabled:cursor-not-allowed`}
       >
         <span
@@ -153,7 +153,7 @@ function Segmented({
             type="button"
             aria-pressed={value === option.value}
             onClick={() => onChange(option.value)}
-            className={`flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-400 ${
+            className={`flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400 ${
               value === option.value
                 ? 'bg-white/[0.09] text-white'
                 : 'text-zinc-500 hover:text-zinc-300'
@@ -181,9 +181,9 @@ function SourceCard({
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      className={`group min-w-0 overflow-hidden rounded-xl border text-left transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
+      className={`group min-w-0 overflow-hidden rounded-xl border text-left transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
         selected
-          ? 'border-violet-400/60 bg-violet-400/10 shadow-[0_0_0_1px_rgba(124,108,255,0.35)]'
+          ? 'border-brand-400/60 bg-brand-400/10 shadow-[0_0_0_1px_rgba(166,234,0,0.35)]'
           : 'border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]'
       }`}
     >
@@ -209,7 +209,7 @@ function SourceCard({
           />
         ) : null}
         {selected ? (
-          <span className="absolute right-2 top-2 rounded-full bg-violet-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+          <span className="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white">
             Selected
           </span>
         ) : null}
@@ -328,7 +328,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
     <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(124,108,255,0.14),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(166,234,0,0.14),transparent_55%)]"
       />
 
       <AppHeader>
@@ -336,7 +336,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
         <button
           type="button"
           onClick={onOpenSetup}
-          className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+          className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
         >
           System check
         </button>
@@ -407,7 +407,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                         onClick={() => {
                           goTo({ name: 'editor', key: projectKey })
                         }}
-                        className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                        className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                       >
                         Open in editor
                       </button>
@@ -417,14 +417,14 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                       onClick={() => {
                         void openProjectFolder()
                       }}
-                      className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                      className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                     >
                       Show in folder
                     </button>
                     <button
                       type="button"
                       onClick={reset}
-                      className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                      className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                     >
                       New recording
                     </button>
@@ -438,7 +438,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                       onClick={() => {
                         void (phase === 'paused' ? resume() : pause())
                       }}
-                      className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                      className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                     >
                       {phase === 'paused' ? 'Resume' : 'Pause'}
                     </button>
@@ -509,7 +509,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                   void loadSources(true)
                 }}
                 disabled={sourcesStatus === 'loading'}
-                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
               >
                 {sourcesStatus === 'loading' ? 'Refreshing…' : 'Refresh'}
               </button>
@@ -693,9 +693,9 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                       void start()
                     }}
                     disabled={startDisabled}
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                   >
-                    <span className="size-2 rounded-full bg-[#fff]" />
+                    <span className="size-2 rounded-full bg-[#000]" />
                     Start recording
                   </button>
 
@@ -729,7 +729,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
             </>
           ) : (
             <>
-              <span className="size-6 animate-spin rounded-full border-2 border-white/20 border-t-violet-400" />
+              <span className="size-6 animate-spin rounded-full border-2 border-white/20 border-t-brand-400" />
               <p className="text-xs text-zinc-400">
                 {localPhase === 'acquiring' ? 'Preparing capture…' : 'Starting…'}
               </p>
@@ -739,7 +739,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
           <button
             type="button"
             onClick={cancelStart}
-            className="mt-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+            className="mt-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
           >
             Cancel
           </button>

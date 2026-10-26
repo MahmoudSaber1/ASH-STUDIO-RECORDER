@@ -14,12 +14,12 @@ const KINDS: Array<{ id: Kind; label: string }> = [
 ]
 
 const GRADIENTS: Array<{ from: string; to: string; angle: number }> = [
-  { from: '#1b1b2f', to: '#4c3fb3', angle: 135 },
+  { from: '#a6ea00', to: '#75e900', angle: 180 },
+  { from: '#0a0a0a', to: '#1f1f1f', angle: 180 },
   { from: '#0f172a', to: '#0ea5e9', angle: 120 },
   { from: '#f97316', to: '#db2777', angle: 135 },
   { from: '#22c55e', to: '#0ea5e9', angle: 160 },
-  { from: '#e2e8f0', to: '#94a3b8', angle: 180 },
-  { from: '#111827', to: '#374151', angle: 90 }
+  { from: '#e2e8f0', to: '#94a3b8', angle: 180 }
 ]
 
 const COLORS = [
@@ -41,9 +41,7 @@ const Heading = ({ children }: { children: React.ReactNode }): React.JSX.Element
 
 const swatchClass = (selected: boolean): string =>
   `overflow-hidden rounded-lg border transition-colors ${
-    selected
-      ? 'border-violet-400 ring-2 ring-violet-400/40'
-      : 'border-white/10 hover:border-white/30'
+    selected ? 'border-brand-400 ring-2 ring-brand-400/40' : 'border-white/10 hover:border-white/30'
   }`
 
 /** Background choices: original wallpapers, gradients, solid colors and the user's own images. */
@@ -197,7 +195,7 @@ export function BackgroundPanel(): React.JSX.Element {
               onChange={(event) => {
                 setBackground({ ...background, angle: Number(event.target.value) }, 'bg-angle')
               }}
-              className="mt-1 w-full accent-violet-500"
+              className="mt-1 w-full accent-brand-500"
             />
           </label>
         </section>
@@ -265,7 +263,7 @@ export function BackgroundPanel(): React.JSX.Element {
               onChange={(event) => {
                 setBackground({ ...background, blur: Number(event.target.value) }, 'bg-blur')
               }}
-              className="mt-1 w-full accent-violet-500"
+              className="mt-1 w-full accent-brand-500"
             />
           </label>
           <p className="text-[11px] leading-relaxed text-zinc-500">

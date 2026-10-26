@@ -23,7 +23,7 @@ export function NavTabs(): React.JSX.Element {
             onClick={() => {
               go({ name: tab.name })
             }}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-400 ${
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400 ${
               active ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >

@@ -42,7 +42,7 @@ export function CameraBubble(): React.JSX.Element {
 
   return (
     <div style={dragStyle} className="flex size-full items-center justify-center p-2">
-      <div className="relative size-full overflow-hidden rounded-full border-[3px] border-white/90 bg-black shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
+      <div className="relative size-full overflow-hidden rounded-full border-[3px] border-[#a6ea00] bg-black shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
         <video
           ref={videoRef}
           muted

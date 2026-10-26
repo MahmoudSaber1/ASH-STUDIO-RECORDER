@@ -57,7 +57,7 @@ function StepIcon({ forward }: { forward: boolean }): React.JSX.Element {
 }
 
 const buttonClass =
-  'flex size-8 items-center justify-center rounded-lg text-zinc-200 hover:bg-white/[0.08] disabled:opacity-35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-400'
+  'flex size-8 items-center justify-center rounded-lg text-zinc-200 hover:bg-white/[0.08] disabled:opacity-35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400'
 
 function SpeakerIcon({ muted }: { muted: boolean }): React.JSX.Element {
   return (
@@ -141,7 +141,7 @@ export function Transport(): React.JSX.Element {
           title={playing ? 'Pause (Space)' : 'Play (Space)'}
           disabled={disabled}
           onClick={togglePlay}
-          className="mx-1 flex size-11 items-center justify-center rounded-full bg-violet-500 text-white shadow-[0_6px_20px_-6px_rgba(124,108,255,0.8)] hover:bg-violet-400 disabled:opacity-35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+          className="mx-1 flex size-11 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_6px_20px_-6px_rgba(166,234,0,0.8)] hover:bg-brand-400 disabled:opacity-35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
         >
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
@@ -193,7 +193,7 @@ export function Transport(): React.JSX.Element {
           onChange={(event) => {
             setVolume(Number(event.target.value))
           }}
-          className="w-20 accent-violet-500 disabled:opacity-35"
+          className="w-20 accent-brand-500 disabled:opacity-35"
         />
       </div>
     </div>

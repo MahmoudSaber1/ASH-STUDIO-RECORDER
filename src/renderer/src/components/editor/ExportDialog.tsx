@@ -146,7 +146,7 @@ export function ExportDialog(): React.JSX.Element | null {
               onChange={(event) => {
                 setIncludeAudio(event.target.checked)
               }}
-              className="accent-violet-500"
+              className="accent-brand-500"
             />
             Include microphone
           </label>
@@ -159,7 +159,7 @@ export function ExportDialog(): React.JSX.Element | null {
                 onChange={(event) => {
                   setHardware(event.target.checked)
                 }}
-                className="accent-violet-500"
+                className="accent-brand-500"
               />
               Use the hardware encoder (faster, larger files)
             </label>
@@ -170,7 +170,7 @@ export function ExportDialog(): React.JSX.Element | null {
           <div className="mt-5">
             <div className="h-2 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full bg-violet-500 transition-[width]"
+                className="h-full bg-brand-500 transition-[width]"
                 style={{ width: `${Math.round(progress * 100)}%` }}
               />
             </div>
@@ -208,7 +208,7 @@ export function ExportDialog(): React.JSX.Element | null {
               onClick={() => {
                 void start()
               }}
-              className="rounded-lg bg-violet-500 px-4 py-2 text-xs font-semibold text-white hover:bg-violet-400"
+              className="rounded-lg bg-brand-500 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-400"
             >
               {phase === 'done' ? 'Export again' : 'Export'}
             </button>

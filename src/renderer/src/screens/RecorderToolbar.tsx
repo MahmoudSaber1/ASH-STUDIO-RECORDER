@@ -103,7 +103,7 @@ export function RecorderToolbar(): React.JSX.Element {
           disabled={pending || phase === 'stopping'}
           aria-label={phase === 'paused' ? 'Resume recording' : 'Pause recording'}
           title={phase === 'paused' ? 'Resume (⌘⇧P)' : 'Pause (⌘⇧P)'}
-          className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-zinc-200 transition-colors hover:bg-white/[0.1] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+          className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-zinc-200 transition-colors hover:bg-white/[0.1] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
         >
           {phase === 'paused' ? <PlayIcon /> : <PauseIcon />}
         </button>

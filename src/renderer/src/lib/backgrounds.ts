@@ -301,9 +301,10 @@ export const paintBackground = (
   }
 
   if (background.kind === 'gradient') {
+    // CSS convention, so the swatches and the frame agree: 0° points up, 90° right, 180° down.
     const radians = (background.angle * Math.PI) / 180
-    const dx = Math.cos(radians) * width
-    const dy = Math.sin(radians) * height
+    const dx = Math.sin(radians) * width
+    const dy = -Math.cos(radians) * height
     ctx.fillStyle = linear(
       ctx,
       width / 2 - dx / 2,

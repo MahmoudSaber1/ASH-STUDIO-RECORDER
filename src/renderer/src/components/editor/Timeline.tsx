@@ -204,7 +204,7 @@ export function Timeline(): React.JSX.Element {
               <div
                 key={`${segment.start}-${segment.end}`}
                 className={`absolute top-1 bottom-1 rounded ${
-                  segment.speed === 1 ? 'bg-violet-500/35' : 'bg-amber-400/40'
+                  segment.speed === 1 ? 'bg-brand-500/35' : 'bg-amber-400/40'
                 }`}
                 style={{
                   left: LABEL_WIDTH + toX(segment.start),

@@ -35,7 +35,7 @@ export function createMainWindow(): BrowserWindow {
     show: false,
     autoHideMenuBar: true,
     title: 'Ash Studio Recorder',
-    backgroundColor: '#0b0b0f',
+    backgroundColor: '#000000',
     ...(process.platform === 'darwin'
       ? {
           titleBarStyle: 'hiddenInset' as const,

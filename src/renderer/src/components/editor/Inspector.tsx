@@ -63,7 +63,7 @@ function Slider({
           onChange(Number(event.target.value))
         }}
         onPointerUp={onCommit}
-        className="mt-1 w-full accent-violet-500"
+        className="mt-1 w-full accent-brand-500"
       />
     </label>
   )
@@ -87,7 +87,7 @@ function Toggle({
         onChange={(event) => {
           onChange(event.target.checked)
         }}
-        className="size-4 accent-violet-500"
+        className="size-4 accent-brand-500"
       />
     </label>
   )
@@ -214,7 +214,7 @@ export function Inspector({
                   type="button"
                   disabled={!media?.samples.hasCursor}
                   onClick={detectZoom}
-                  className="flex-1 rounded-lg bg-violet-500 px-3 py-2 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+                  className="flex-1 rounded-lg bg-brand-500 px-3 py-2 text-xs font-medium text-white hover:bg-brand-400 disabled:opacity-40"
                 >
                   Detect from clicks
                 </button>

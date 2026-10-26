@@ -23,7 +23,7 @@ function BootScreen(): React.JSX.Element {
     <div className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,108,255,0.14),transparent_60%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(166,234,0,0.14),transparent_60%)]"
       />
       <div className="relative flex items-center gap-3">
         <Logo className="size-9" />

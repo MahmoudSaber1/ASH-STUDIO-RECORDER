@@ -96,7 +96,7 @@ export function SpeedPanel(): React.JSX.Element {
             onClick={() => {
               speedSelection(customValue)
             }}
-            className="rounded-lg bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-35"
+            className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-400 disabled:opacity-35"
           >
             Apply
           </button>
@@ -120,7 +120,7 @@ export function SpeedPanel(): React.JSX.Element {
             onChange={(event) => {
               setIdleSeconds(Number(event.target.value))
             }}
-            className="mt-1 w-full accent-violet-500"
+            className="mt-1 w-full accent-brand-500"
           />
         </label>
         <label className="block text-xs text-zinc-400">
@@ -134,7 +134,7 @@ export function SpeedPanel(): React.JSX.Element {
             onChange={(event) => {
               setIdleSpeed(Number(event.target.value))
             }}
-            className="mt-1 w-full accent-violet-500"
+            className="mt-1 w-full accent-brand-500"
           />
         </label>
         <button

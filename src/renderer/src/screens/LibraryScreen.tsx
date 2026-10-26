@@ -85,11 +85,11 @@ function ProjectCard({ project, thumbnail, onChanged }: CardProps): React.JSX.El
               value={name}
               onChange={(event) => setName(event.target.value)}
               autoFocus
-              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-zinc-100 outline-none focus-visible:border-violet-400"
+              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-sm text-zinc-100 outline-none focus-visible:border-brand-400"
             />
             <button
               type="submit"
-              className="rounded-lg bg-violet-500 px-3 text-xs font-medium text-white"
+              className="rounded-lg bg-brand-500 px-3 text-xs font-medium text-white"
             >
               Save
             </button>
@@ -117,7 +117,7 @@ function ProjectCard({ project, thumbnail, onChanged }: CardProps): React.JSX.El
               onClick={() => {
                 go({ name: 'editor', key: project.key })
               }}
-              className="rounded-lg bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-50"
+              className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-400 disabled:opacity-50"
             >
               Open
             </button>

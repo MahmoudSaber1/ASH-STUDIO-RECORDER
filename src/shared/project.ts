@@ -158,7 +158,8 @@ export const createDefaultEditor = (): EditorState => ({
   zoom: { auto: true, sensitivity: 0.5, detected: false, level: 1.6, segments: [] },
   cursor: { visible: true, size: 1.4, smoothing: 0.5, clickRipples: true, highlight: false },
   keystrokes: false,
-  background: { kind: 'gradient', from: '#1b1b2f', to: '#4c3fb3', angle: 135 },
+  // The brand gradient from the Ash logo.
+  background: { kind: 'gradient', from: '#a6ea00', to: '#75e900', angle: 180 },
   frame: { aspect: 'original', padding: 0.06, radius: 0.02, shadow: 0.5 },
   faceCam: {
     enabled: false,

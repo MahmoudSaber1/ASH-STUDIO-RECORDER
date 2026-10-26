@@ -14,7 +14,7 @@ function StepShell({
     <div className="relative flex min-h-screen flex-1 flex-col items-center justify-center px-6 py-16 [-webkit-app-region:drag]">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(124,108,255,0.18),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(166,234,0,0.18),transparent_55%)]"
       />
       <div className="relative w-full max-w-xl [-webkit-app-region:no-drag]">
         <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -103,7 +103,7 @@ export function WelcomeScreen({ onNext }: { onNext: () => void }): React.JSX.Ele
         <button
           type="button"
           onClick={chooseFolder}
-          className="mt-2 text-xs font-medium text-violet-300 hover:text-violet-200"
+          className="mt-2 text-xs font-medium text-brand-300 hover:text-brand-200"
         >
           Change folder
         </button>
@@ -113,7 +113,7 @@ export function WelcomeScreen({ onNext }: { onNext: () => void }): React.JSX.Ele
       <button
         type="button"
         onClick={onNext}
-        className="mt-8 w-full rounded-xl bg-violet-500 py-3 text-sm font-semibold text-white hover:bg-violet-400"
+        className="mt-8 w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white hover:bg-brand-400"
       >
         Get started
       </button>
@@ -164,7 +164,7 @@ export function ReadyScreen({ onFinish }: { onFinish: () => void }): React.JSX.E
       <button
         type="button"
         onClick={onFinish}
-        className="mt-8 w-full rounded-xl bg-violet-500 py-3 text-sm font-semibold text-white hover:bg-violet-400"
+        className="mt-8 w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white hover:bg-brand-400"
       >
         Start recording
       </button>

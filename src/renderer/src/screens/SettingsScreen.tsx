@@ -71,7 +71,7 @@ export function SettingsScreen(): React.JSX.Element {
                   onClick={() => {
                     run(() => window.api.settings.chooseRecordingsFolder())
                   }}
-                  className="rounded-lg bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400"
+                  className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-400"
                 >
                   Choose folder
                 </button>
