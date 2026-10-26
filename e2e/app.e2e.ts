@@ -85,6 +85,8 @@ test('plays, splits, deletes and undoes an edit', async () => {
   await page.getByRole('button', { name: 'Undo' }).click()
 
   // Select a range by dragging on the timeline and delete it.
+  // The detected-zoom notice pushes the timeline down, so bring it into view first.
+  await slider.scrollIntoViewIfNeeded()
   const box = await slider.boundingBox()
   if (!box) throw new Error('timeline is not visible')
   await page.mouse.move(box.x + 180, box.y + 40)
@@ -99,7 +101,7 @@ test('plays, splits, deletes and undoes an edit', async () => {
 })
 
 test('saves edits and reopens with the same zoom segments', async () => {
-  await expect(page.getByText('Saved')).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible({ timeout: 10_000 })
   await page
     .getByRole('button', { name: /Projects/ })
     .first()
