@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { keyLabel, normalizePoint, parseEventLog } from '../events'
+import { isInsideCapture, keyLabel, normalizePoint, parseEventLog } from '../events'
 import { activeMsToVideoSeconds, videoSecondsToActiveMs } from '../sync'
 
 describe('parseEventLog', () => {
@@ -16,10 +16,13 @@ describe('parseEventLog', () => {
 })
 
 describe('normalizePoint', () => {
-  it('maps global coordinates into the capture and clamps the edges', () => {
+  it('maps global coordinates into the capture and keeps outside points outside', () => {
     const bounds = { x: 1000, y: 0, width: 2000, height: 1000 }
     expect(normalizePoint(2000, 500, bounds)).toEqual({ x: 0.5, y: 0.5 })
-    expect(normalizePoint(0, -50, bounds)).toEqual({ x: 0, y: 0 })
+    const outside = normalizePoint(0, -50, bounds)
+    expect(outside).toEqual({ x: -0.5, y: -0.05 })
+    expect(isInsideCapture(outside)).toBe(false)
+    expect(isInsideCapture({ x: 0.5, y: 0.5 })).toBe(true)
   })
 })
 

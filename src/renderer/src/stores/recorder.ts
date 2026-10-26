@@ -62,6 +62,46 @@ const toTarget = (source: CaptureSource): CaptureTarget => ({
   ...(source.displayId ? { displayId: source.displayId } : {})
 })
 
+const OPTIONS_KEY = 'ash.recorder.options'
+
+/**
+ * Capture settings are remembered between launches, so turning the microphone
+ * on once keeps it on. Storage can be unavailable; defaults are used then.
+ */
+function loadSavedOptions(): RecorderOptions {
+  try {
+    const raw = window.localStorage.getItem(OPTIONS_KEY)
+    if (!raw) return DEFAULT_RECORDER_OPTIONS
+    const saved = JSON.parse(raw) as Partial<Record<keyof RecorderOptions, unknown>>
+    const flag = (value: unknown, fallback: boolean): boolean =>
+      typeof value === 'boolean' ? value : fallback
+    return {
+      fps: saved.fps === 60 ? 60 : 30,
+      countdownMs:
+        typeof saved.countdownMs === 'number' && [0, 3000, 5000].includes(saved.countdownMs)
+          ? saved.countdownMs
+          : DEFAULT_RECORDER_OPTIONS.countdownMs,
+      captureWebcam: flag(saved.captureWebcam, DEFAULT_RECORDER_OPTIONS.captureWebcam),
+      captureMicrophone: flag(saved.captureMicrophone, DEFAULT_RECORDER_OPTIONS.captureMicrophone),
+      captureSystemAudio: flag(
+        saved.captureSystemAudio,
+        DEFAULT_RECORDER_OPTIONS.captureSystemAudio
+      ),
+      logKeys: flag(saved.logKeys, DEFAULT_RECORDER_OPTIONS.logKeys)
+    }
+  } catch {
+    return DEFAULT_RECORDER_OPTIONS
+  }
+}
+
+const saveOptions = (options: RecorderOptions): void => {
+  try {
+    window.localStorage.setItem(OPTIONS_KEY, JSON.stringify(options))
+  } catch {
+    // Not saving is fine; the options still apply to this session.
+  }
+}
+
 let activeController: CaptureController | null = null
 let startAttempt = 0
 let finalizePromise: Promise<void> | null = null
@@ -81,7 +121,7 @@ export const useRecorderStore = create<RecorderStore>((set, get) => ({
   error: null,
   warnings: [],
   target: null,
-  options: DEFAULT_RECORDER_OPTIONS,
+  options: loadSavedOptions(),
   sources: [],
   sourcesStatus: 'idle',
   sourcesError: null,
@@ -124,6 +164,7 @@ export const useRecorderStore = create<RecorderStore>((set, get) => ({
 
   updateOptions: (patch) => {
     set((state) => ({ options: { ...state.options, ...patch } }))
+    saveOptions(get().options)
   },
 
   start: async () => {

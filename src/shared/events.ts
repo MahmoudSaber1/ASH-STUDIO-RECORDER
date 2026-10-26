@@ -27,13 +27,18 @@ export const parseEventLog = (text: string): RecorderInputEvent[] => {
 }
 
 /**
- * Converts global screen coordinates into normalized coordinates inside the
- * captured area. Points outside the capture are clamped to the edge.
+ * Converts global screen coordinates into normalized coordinates of the captured
+ * area. Points outside the capture fall outside 0..1, so the editor can hide the
+ * cursor while it is on another display instead of pinning it to the edge.
  */
 export const normalizePoint = (x: number, y: number, bounds: Bounds): { x: number; y: number } => ({
-  x: Math.min(Math.max((x - bounds.x) / bounds.width, 0), 1),
-  y: Math.min(Math.max((y - bounds.y) / bounds.height, 0), 1)
+  x: (x - bounds.x) / bounds.width,
+  y: (y - bounds.y) / bounds.height
 })
+
+/** True when a normalized point is on the captured area. */
+export const isInsideCapture = (point: { x: number; y: number }): boolean =>
+  point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1
 
 /**
  * Selected uiohook (libuiohook VC_*) key codes mapped to labels for the

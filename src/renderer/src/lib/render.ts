@@ -1,6 +1,7 @@
 import { cameraAt, type CameraState } from '@shared/zoom'
 import { cursorAt, ripplesAt, smoothedCursorAt } from '@shared/cursor'
-import { keyLabel } from '@shared/events'
+import { isInsideCapture, keyLabel } from '@shared/events'
+import { paintBackground } from './backgrounds'
 import type { EditorState } from '@shared/project'
 import type { InputSamples, ProjectMedia } from './project-media'
 
@@ -11,6 +12,8 @@ export interface FrameInput {
   timeMs: number
   editor: EditorState
   media: ProjectMedia
+  /** Resolves a file name in the project folder to a URL, for image backgrounds. */
+  assetUrl: (fileName: string) => string
 }
 
 interface Rect {
@@ -18,34 +21,6 @@ interface Rect {
   y: number
   w: number
   h: number
-}
-
-/** Background, padding, rounding and shadow. Shared by preview and export. */
-const drawBackground = (
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  background: EditorState['background']
-): void => {
-  if (background.kind === 'solid') {
-    ctx.fillStyle = background.color
-    ctx.fillRect(0, 0, width, height)
-    return
-  }
-
-  const radians = (background.angle * Math.PI) / 180
-  const dx = Math.cos(radians) * width
-  const dy = Math.sin(radians) * height
-  const gradient = ctx.createLinearGradient(
-    width / 2 - dx / 2,
-    height / 2 - dy / 2,
-    width / 2 + dx / 2,
-    height / 2 + dy / 2
-  )
-  gradient.addColorStop(0, background.from)
-  gradient.addColorStop(1, background.to)
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, width, height)
 }
 
 const roundedPath = (ctx: CanvasRenderingContext2D, rect: Rect, radius: number): void => {
@@ -183,7 +158,7 @@ export const drawFrame = (input: FrameInput): void => {
 
   ctx.save()
   ctx.clearRect(0, 0, width, height)
-  drawBackground(ctx, width, height, editor.background)
+  paintBackground(ctx, width, height, editor.background, input.assetUrl)
 
   const pad = editor.frame.padding * width
   const outer: Rect = { x: pad, y: pad, w: width - pad * 2, h: height - pad * 2 }
@@ -196,7 +171,9 @@ export const drawFrame = (input: FrameInput): void => {
   const camera = cameraAt(timeMs, editor.zoom.segments, (t, segment) => {
     if (followCursor) {
       const point = smoothedCursorAt(t, samples.moves, editor.cursor.smoothing)
-      if (point) return point
+      // Keep following from the edge while the pointer is on another display.
+      if (point)
+        return { x: Math.min(Math.max(point.x, 0), 1), y: Math.min(Math.max(point.y, 0), 1) }
     }
     return { x: segment.focusX, y: segment.focusY }
   })
@@ -228,9 +205,16 @@ export const drawFrame = (input: FrameInput): void => {
   // Cursor data only means something when the capture bounds are known.
   if (samples.hasCursor) {
     const scale = editor.cursor.size * (frame.h / 720)
+    // The pointer is hidden while it is outside the captured area, and cursor
+    // effects never spill over the background around the frame.
+    const raw = cursorAt(timeMs, samples.moves)
+    const onScreen = raw !== null && isInsideCapture(raw)
+    ctx.save()
+    roundedPath(ctx, frame, radius)
+    ctx.clip()
 
-    if (editor.cursor.highlight) {
-      const point = cursorAt(timeMs, samples.moves)
+    if (editor.cursor.highlight && onScreen) {
+      const point = raw
       if (point) {
         const at = toFrame(point, camera, frame)
         ctx.save()
@@ -244,6 +228,7 @@ export const drawFrame = (input: FrameInput): void => {
 
     if (editor.cursor.clickRipples) {
       for (const ripple of ripplesAt(timeMs, samples.clicks)) {
+        if (!isInsideCapture(ripple)) continue
         const at = toFrame(ripple, camera, frame)
         ctx.save()
         ctx.globalAlpha = 1 - ripple.progress
@@ -256,13 +241,14 @@ export const drawFrame = (input: FrameInput): void => {
       }
     }
 
-    if (editor.cursor.visible) {
+    if (editor.cursor.visible && onScreen) {
       const point =
         editor.cursor.smoothing > 0
           ? smoothedCursorAt(timeMs, samples.moves, editor.cursor.smoothing)
-          : cursorAt(timeMs, samples.moves)
+          : raw
       if (point) drawCursor(ctx, toFrame(point, camera, frame), scale)
     }
+    ctx.restore()
   }
 
   if (editor.keystrokes) {

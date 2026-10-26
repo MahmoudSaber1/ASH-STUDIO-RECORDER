@@ -30,8 +30,33 @@ export interface ZoomSegment extends TimeRange {
   source: 'auto' | 'manual'
 }
 
+export const WALLPAPER_IDS = [
+  'dunes',
+  'bloom',
+  'aurora',
+  'ocean',
+  'sunset',
+  'violet-mesh',
+  'mint',
+  'graphite'
+] as const
+
+export type WallpaperId = (typeof WALLPAPER_IDS)[number]
+
+/** File names allowed for custom background images inside a project folder. */
+export const BACKGROUND_FILE_PATTERN = /^background-[\w-]+\.(png|jpe?g|webp)$/
+
 export type Background =
-  { kind: 'solid'; color: string } | { kind: 'gradient'; from: string; to: string; angle: number }
+  | { kind: 'solid'; color: string }
+  | { kind: 'gradient'; from: string; to: string; angle: number }
+  | { kind: 'wallpaper'; id: WallpaperId }
+  | {
+      kind: 'image'
+      /** Image copied into the project folder, so the project stays portable. */
+      fileName: string
+      /** Blur radius at 1080p, 0 to 40. */
+      blur: number
+    }
 
 export type FaceCamShape = 'circle' | 'rounded' | 'rect'
 export type FaceCamAnchor = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right'
@@ -48,6 +73,8 @@ export interface EditorState {
     auto: boolean
     /** 0 means only strong clicks trigger zoom; 1 means every click does. */
     sensitivity: number
+    /** True once zoom segments were generated from clicks, so opening again does not redo it. */
+    detected: boolean
     /** Default zoom level for automatic segments. */
     level: number
     segments: ZoomSegment[]
@@ -128,7 +155,7 @@ export const createDefaultEditor = (): EditorState => ({
   cuts: [],
   splits: [],
   speedRamps: [],
-  zoom: { auto: true, sensitivity: 0.5, level: 1.6, segments: [] },
+  zoom: { auto: true, sensitivity: 0.5, detected: false, level: 1.6, segments: [] },
   cursor: { visible: true, size: 1.4, smoothing: 0.5, clickRipples: true, highlight: false },
   keystrokes: false,
   background: { kind: 'gradient', from: '#1b1b2f', to: '#4c3fb3', angle: 135 },
@@ -224,6 +251,16 @@ const readBackground = (value: unknown, fallback: Background): Background => {
       angle: num(value.angle, 0, 360, 135)
     }
   }
+  if (value.kind === 'wallpaper') {
+    return { kind: 'wallpaper', id: oneOf(value.id, WALLPAPER_IDS, 'dunes') }
+  }
+  if (
+    value.kind === 'image' &&
+    typeof value.fileName === 'string' &&
+    BACKGROUND_FILE_PATTERN.test(value.fileName)
+  ) {
+    return { kind: 'image', fileName: value.fileName, blur: num(value.blur, 0, 40, 0) }
+  }
   return fallback
 }
 
@@ -253,6 +290,7 @@ export const normalizeEditor = (input: unknown): EditorState => {
     zoom: {
       auto: bool(zoom.auto, base.zoom.auto),
       sensitivity: num(zoom.sensitivity, 0, 1, base.zoom.sensitivity),
+      detected: bool(zoom.detected, base.zoom.detected),
       level: num(zoom.level, 1.1, 4, base.zoom.level),
       segments: list(zoom.segments, readZoomSegment)
     },
