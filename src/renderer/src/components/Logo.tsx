@@ -1,19 +1,46 @@
 import { useId } from 'react'
 
+/**
+ * The app mark: the Ash mascot as a screen, black on the brand lime gradient.
+ * Paths come from build/logo-glyph.svg, which also generates the app icons
+ * (scripts/render-icons.mjs).
+ */
 export function Logo({ className = 'size-7' }: { className?: string }): React.JSX.Element {
   const gradientId = useId()
 
   return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
+    <svg viewBox="100 100 824 824" aria-hidden="true" className={className}>
       <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#a78bfa" />
-          <stop offset="100%" stopColor="#6366f1" />
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#a6ea00" />
+          <stop offset="100%" stopColor="#75e900" />
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="9" fill={`url(#${gradientId})`} />
-      <circle cx="16" cy="16" r="6.5" fill="none" stroke="white" strokeWidth="2.5" />
-      <circle cx="16" cy="16" r="2" fill="white" />
+      <rect x="100" y="100" width="824" height="824" rx="186" fill={`url(#${gradientId})`} />
+      <g transform="translate(512 512) scale(0.74) translate(-512 -512)">
+        <path
+          d="M262 236 H762 Q800 236 806 274 L842 590 Q846 632 804 632 H220 Q178 632 182 590 L218 274 Q224 236 262 236 Z"
+          fill="#000"
+        />
+        <path
+          d="M404 632 H620 L688 810 Q694 828 676 828 H574 Q563 828 557 818 L524 760 Q512 742 500 760 L467 818 Q461 828 450 828 H348 Q330 828 336 810 Z"
+          fill="#000"
+        />
+        <path
+          d="M330 404 H694 Q694 512 612 512 Q560 512 512 470 Q464 512 412 512 Q330 512 330 404 Z"
+          fill="#a6ea00"
+        />
+        <circle cx="430" cy="404" r="34" fill="#000" />
+        <circle cx="594" cy="404" r="34" fill="#000" />
+        <path
+          d="M721.3 268.5 L718.9 267.2 L716.4 265.9 L714.0 264.8 L711.4 263.9 L708.9 263.0 L706.3 262.3 L703.7 261.7 L701.0 261.2 L698.4 260.9 L695.8 260.7 L693.1 260.6 L690.5 260.6 L687.9 260.8 L685.3 261.1 L682.7 261.5 L680.2 262.0 L677.7 262.6 L675.3 263.4 L672.9 264.2 L670.5 265.2 L668.2 266.3 L666.0 267.5 L663.8 268.8 L661.7 270.1 L659.7 271.6 L657.8 273.2 L655.9 274.8 L654.2 276.5 L652.5 278.3 L650.9 280.2 L649.4 282.1 L648.0 284.1 L646.7 286.1 L645.6 288.2 L644.5 290.4 L643.5 292.5 L642.7 294.8 L641.9 297.0 L641.3 299.3 L640.7 301.5 L640.3 303.8 L640.0 306.1 L639.8 308.5 L639.7 310.8 L639.7 313.0 L639.9 315.3 L640.1 317.6 L640.4 319.8 L640.9 322.0 L641.4 324.2 L642.1 326.3 L642.8 328.4 L643.7 330.5 L644.6 332.5 L645.6 334.4 L646.7 336.3 L647.9 338.1 L649.2 339.9 L650.5 341.6 L651.9 343.2 L653.4 344.7 L655.0 346.2 L656.6 347.5 L658.3 348.8 L660.0 350.0 L661.7 351.1 L663.5 352.1 L665.4 353.1 L667.2 353.9 L669.2 354.6 L671.1 355.3 L673.0 355.8 L675.0 356.3 L677.0 356.7 L678.9 356.9 L680.9 357.1 L682.9 357.2 L684.8 357.2 L686.8 357.1 L688.7 356.9 L690.6 356.6 L692.5 356.2 L694.4 355.7 L696.2 355.2 L698.0 354.5 L699.7 353.8 L701.4 353.0 L703.0 352.1 L704.6 351.2 L706.2 350.2 L707.7 349.1 L709.1 348.0 L710.4 346.8 L711.7 345.5 L712.9 344.2 L714.1 342.8 L715.2 341.4 L716.2 340.0 L717.1 338.5 L718.0 337.0 L718.7 335.4 L719.4 333.9 L720.0 332.3 L720.6 330.6 L721.0 329.0 L721.4 327.4 L721.7 325.7 L721.9 324.1 L722.0 322.4 L722.1 320.8 L722.1 319.2 L722.0 317.5 L721.8 315.9 L721.5 314.4 L721.2 312.8 L720.8 311.3 L720.3 309.8 L719.8 308.3 L719.2 306.9 L718.5 305.5 L717.8 304.1 L717.0 302.8 L716.2 301.6 L715.3 300.4 L714.3 299.2 L713.3 298.1 L712.3 297.1 L711.2 296.1 L710.1 295.2 L708.9 294.3 L707.8 293.5 L706.5 292.8 L705.3 292.1 L704.0 291.5 L702.8 291.0 L701.5 290.5 L700.2 290.1 L698.8 289.7 L697.5 289.4 L696.2 289.2"
+          fill="none"
+          stroke="#a6ea00"
+          strokeWidth="17"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
     </svg>
   )
 }
