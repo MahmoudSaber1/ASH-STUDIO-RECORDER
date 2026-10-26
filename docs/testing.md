@@ -6,10 +6,12 @@
 | --- | --- |
 | `npm test` | Vitest unit and integration tests: project schema and migrations, timeline and segment math, zoom and spring easing, cursor interpolation, event log parsing, video-to-clock sync, editing commands, output sizing, project store (against temp folders), FFmpeg argument building. |
 | `npm run build && npm run test:e2e` | Playwright against the built Electron app: library, editor, zoom detection, playback, split, select and delete, undo, autosave, MP4 export checked with FFmpeg, and the settings screen. |
-| `ASH_E2E_APP=<path to packaged binary> npm run test:e2e` | The same E2E suite against a packaged build, to check the shipped artifact. |
+| `ASH_E2E_RECORD=1 npm run test:e2e` | Opt-in live recording with a fake camera: checks the camera bubble opens and closes and that the project has screen, webcam and event files. Records your real screen for a few seconds. |
+
+Packaged builds have the `--inspect` fuse turned off, so Playwright cannot drive them; check a packaged build by launching it and following the manual checklist.
 
 The E2E suite generates its own project folder (`e2e/make-fixture.mjs`) and sets
-`ASH_RECORDINGS_DIR`, so it never touches your real recordings. Native save and open
+`ASH_RECORDINGS_DIR` and `ASH_USER_DATA_DIR`, so it never touches your real recordings or settings and runs alongside an open copy of the app. Native save and open
 dialogs are replaced with fixed paths inside the test.
 
 ## Manual checklist

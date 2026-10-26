@@ -4,6 +4,16 @@ An open-source, cross-platform screen recorder and editor for macOS and Windows 
 
 **Status: pre-alpha.** Recording, the project library, the editor and export all work end to end. Some items are still open. See [docs/roadmap.md](docs/roadmap.md).
 
+## Download
+
+Installers for macOS (Apple Silicon and Intel) and Windows are published on the
+project's GitHub Releases page. Download only from there.
+
+- [Install guide](docs/install.md), including the one-time macOS and Windows
+  security prompts for this pre-release
+- [Uninstall guide](docs/uninstall.md): recordings are always kept
+- [Privacy](docs/privacy.md): everything stays on your computer
+
 ## The core idea
 
 Never bake effects during recording. Save raw data, then replay and render it.

@@ -39,3 +39,28 @@ Out of scope:
 - Captures and project data stay on the local disk.
 - The renderer is context-isolated and never receives raw Node APIs.
 - New IPC channels are typed and validated in the main process.
+
+## Security model
+
+The app records sensitive content, so the shell is locked down:
+
+- Every window runs with context isolation, the renderer sandbox, and no Node.js
+  integration. Pages reach the main process only through a typed preload API.
+- The main process accepts IPC only from the app's own top-level pages and
+  validates every argument. Project media is served through a custom protocol that
+  only returns files a project lists, with path traversal blocked.
+- Navigation to other origins, new windows and `<webview>` are blocked. The only
+  permissions granted are camera, microphone and screen capture, and only to the
+  app's own pages.
+- Production builds use a strict Content Security Policy with no inline scripts.
+- Electron fuses disable `ELECTRON_RUN_AS_NODE`, `NODE_OPTIONS` and `--inspect`,
+  and the app only loads from its own asar archive, checked against an embedded
+  hash.
+- The app makes no network connections and has no telemetry.
+
+## Verifying releases
+
+Only download from the project's GitHub Releases. Each release publishes SHA-256
+checksums; see [docs/install.md](docs/install.md#verify-your-download). Builds are
+produced by GitHub Actions from tagged commits, so every installer can be traced
+to its source.
