@@ -4,41 +4,85 @@ on:
   push:
     tags: ['v*']
 
+# Jobs get only the permissions they need; publishing is limited to the packaging job.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  package:
-    name: Package ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest]
+  verify:
+    name: Lint, typecheck, unit tests
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      - run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
 
-      - name: Install dependencies
-        run: npm ci
+  package:
+    name: Package ${{ matrix.name }}
+    needs: verify
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Apple Silicon
+            os: macos-latest
+            arch: arm64
+            builder: --mac --arm64
+          - name: macOS Intel
+            os: macos-latest
+            arch: x64
+            builder: --mac --x64
+          - name: Windows
+            os: windows-latest
+            arch: x64
+            builder: --win --x64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
 
-      - name: Test
-        run: npm test
-
-      - name: Typecheck and lint
+      # FFmpeg is a native binary downloaded for one architecture. The Intel build
+      # runs on an Apple Silicon runner, so fetch the x64 binary explicitly and check it.
+      - name: Fetch FFmpeg for the target architecture
+        if: runner.os == 'macOS'
+        shell: bash
         run: |
-          npm run typecheck
-          npm run lint
+          npm_config_arch=${{ matrix.arch }} node node_modules/ffmpeg-static/install.js
+          expected=$([ "${{ matrix.arch }}" = "x64" ] && echo x86_64 || echo arm64)
+          file node_modules/ffmpeg-static/ffmpeg | tee /dev/stderr | grep -q "$expected"
 
-      - name: Build and publish installers
-        run: npx electron-builder --publish always
+      - run: npm run build
+
+      - name: Build and publish installers (draft release)
+        run: npx electron-builder ${{ matrix.builder }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Installers are unsigned until a certificate is added. See README.
+          # No paid signing certificates yet; macOS builds are ad-hoc signed.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Publish SHA-256 checksums
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd release
+          shopt -s nullglob
+          files=(*.dmg *.zip *.exe)
+          sums="SHA256SUMS-${{ runner.os }}-${{ matrix.arch }}.txt"
+          if command -v sha256sum >/dev/null; then sha256sum "${files[@]}" > "$sums"; else shasum -a 256 "${files[@]}" > "$sums"; fi
+          cat "$sums"
+          gh release upload "$GITHUB_REF_NAME" "$sums" --clobber

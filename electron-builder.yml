@@ -1,6 +1,7 @@
 appId: com.ashstudio.recorder
 productName: Ash Studio Recorder
 copyright: Copyright (c) Ash Studio Recorder contributors
+artifactName: Ash-Studio-Recorder-${version}-${os}-${arch}.${ext}
 directories:
   output: release
   buildResources: build
@@ -13,13 +14,29 @@ asarUnpack:
   - node_modules/uiohook-napi/**
 extraMetadata:
   main: out/main/index.js
+
+# Electron fuses turn off ways to run the shipped binary as something else:
+# no ELECTRON_RUN_AS_NODE, no NODE_OPTIONS, no --inspect, and the app only
+# loads from its own asar archive, checked against an embedded hash.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableCookieEncryption: true
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+
 mac:
   category: public.app-category.video
+  # Build one architecture per run (see the release workflow), because FFmpeg
+  # is downloaded for the architecture npm installs it on.
   target:
-    - target: dmg
-      arch: [arm64, x64]
-    - target: zip
-      arch: [arm64, x64]
+    - dmg
+    - zip
+  # Ad-hoc signature for the whole bundle under this app's identifier. Without
+  # a Developer ID this is the best available, and macOS needs a signature to
+  # run Apple Silicon apps and to remember permissions.
+  identity: '-'
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
@@ -27,6 +44,9 @@ mac:
   extendInfo:
     NSCameraUsageDescription: Ash Studio Recorder uses the camera for the optional face cam.
     NSMicrophoneUsageDescription: Ash Studio Recorder records your microphone when you turn it on.
+dmg:
+  title: Ash Studio Recorder ${version}
+
 win:
   target:
     - target: nsis
@@ -35,6 +55,16 @@ win:
       arch: [x64]
 nsis:
   oneClick: false
+  perMachine: false
   allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  # Settings and logs only. Recordings are in the Videos folder and are kept.
+  deleteAppDataOnUninstall: true
+  artifactName: Ash-Studio-Recorder-${version}-windows-setup.${ext}
+portable:
+  artifactName: Ash-Studio-Recorder-${version}-windows-portable.${ext}
+
 publish:
   provider: github
+  releaseType: draft
