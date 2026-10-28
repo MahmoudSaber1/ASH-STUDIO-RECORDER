@@ -4,17 +4,11 @@ import { useEditor } from '@renderer/stores/editor'
 import { SpeedPanel } from './SpeedPanel'
 import { BackgroundPanel } from './BackgroundPanel'
 
-type Tab = 'zoom' | 'speed' | 'cursor' | 'background' | 'frame' | 'facecam' | 'audio'
-
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'zoom', label: 'Zoom' },
-  { id: 'speed', label: 'Speed' },
-  { id: 'cursor', label: 'Cursor' },
-  { id: 'background', label: 'Background' },
-  { id: 'frame', label: 'Frame' },
-  { id: 'facecam', label: 'Face cam' },
-  { id: 'audio', label: 'Audio' }
-]
+import {
+  PRIMARY_INSPECTOR_TABS,
+  MORE_INSPECTOR_TABS,
+  type InspectorTab
+} from './inspector-tabs'
 
 function Section({ title, children }: { title: string; children: ReactNode }): React.JSX.Element {
   return (
@@ -133,7 +127,7 @@ export function Inspector({
   hasMic: boolean
   hasCursor: boolean
 }): React.JSX.Element {
-  const [tab, setTab] = useState<Tab>('zoom')
+  const [tab, setTab] = useState<InspectorTab>('zoom')
   const editor = useEditor((state) => state.editor)
   const update = useEditor((state) => state.update)
   const media = useEditor((state) => state.media)
@@ -150,24 +144,49 @@ export function Inspector({
   const selectedZoom = editor.zoom.segments.find((segment) => segment.id === selectedZoomId) ?? null
 
   return (
-    <aside className="flex min-h-0 w-full flex-col rounded-2xl border border-white/8 bg-white/[0.02] lg:w-80">
-      <div role="tablist" className="flex flex-wrap gap-1 border-b border-white/5 p-2">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === item.id}
-            onClick={() => {
-              setTab(item.id)
+    <aside className="flex h-full min-h-0 w-full flex-col bg-panel">
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-4">
+        <h2 className="text-xs font-semibold text-zinc-100">Properties</h2>
+        <span className="text-[11px] text-zinc-500">Inspector</span>
+      </div>
+      <div className="shrink-0 border-b border-white/10 px-3 py-3">
+        <div role="group" aria-label="Primary inspector tools" className="grid grid-cols-4 gap-1">
+          {PRIMARY_INSPECTOR_TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={tab === item.id}
+              onClick={() => {
+                setTab(item.id)
+              }}
+              className={`rounded-lg px-1.5 py-2 text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400 ${
+                tab === item.id
+                  ? 'bg-brand-500/10 text-brand-300'
+                  : 'text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <label className="mt-2 block">
+          <span className="sr-only">More inspector tools</span>
+          <select
+            aria-label="More inspector tools"
+            value={MORE_INSPECTOR_TABS.some((item) => item.id === tab) ? tab : ''}
+            onChange={(event) => {
+              if (event.target.value) setTab(event.target.value as InspectorTab)
             }}
-            className={`rounded-md px-2.5 py-1 text-[11px] font-medium ${
-              tab === item.id ? 'bg-white/[0.09] text-white' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
+            className="w-full cursor-pointer rounded-md bg-transparent px-2 py-1.5 text-[11px] text-zinc-400 outline-none hover:bg-white/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400"
           >
-            {item.label}
-          </button>
-        ))}
+            <option value="">More tools</option>
+            {MORE_INSPECTOR_TABS.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4">
