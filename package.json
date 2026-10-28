@@ -21,6 +21,7 @@
   "scripts": {
     "dev": "electron-vite dev --watch",
     "start": "electron-vite preview",
+    "prebuild": "node scripts/generate-installer-artwork.mjs",
     "build": "npm run typecheck && electron-vite build",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
