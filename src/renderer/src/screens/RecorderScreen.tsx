@@ -108,11 +108,11 @@ function SourcePreview({ target }: { target: CaptureTarget }): React.JSX.Element
   }, [target])
 
   return (
-    <div className="mb-5">
+    <div className="w-full">
       <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
         Live preview {status === 'live' ? '· live' : ''}
       </p>
-      <div className="relative mx-auto flex aspect-video w-full max-w-[600px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#000]">
+      <div className="relative mx-auto flex aspect-video w-full max-w-[900px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#000]">
         <video
           ref={videoRef}
           muted
@@ -342,7 +342,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
         </button>
       </AppHeader>
 
-      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-6 pb-10 pt-6">
+      <main className="relative z-10 mx-auto w-full max-w-[1600px] flex-1 px-4 pb-10 pt-5 md:px-6">
         {warnings.length > 0 ? (
           <div className="mx-auto mb-5 max-w-xl space-y-2" role="status">
             {warnings.map((warning) => (
@@ -497,10 +497,10 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-white">
-                  What are we recording?
+                  Choose what to record.
                 </h1>
                 <p className="mt-1 text-xs text-zinc-500">
-                  Raw capture only. Cursor, zoom, and polish are applied later in the editor.
+                  Choose a display or window. Polish your capture later in the editor.
                 </p>
               </div>
               <button
@@ -539,13 +539,16 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
               </div>
             ) : null}
 
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="min-w-0">
-                {target && !isBusy && !isFinished ? (
-                  <SourcePreview key={target.id} target={target} />
-                ) : null}
-
-                <div className="mb-3 flex items-center gap-1">
+            <div className="grid min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-panel/60 lg:min-h-[580px] lg:grid-cols-[210px_minmax(0,1fr)_280px] xl:grid-cols-[240px_minmax(0,1fr)_300px]">
+              <section
+                aria-label="Capture sources"
+                className="min-w-0 border-b border-white/10 p-4 lg:max-h-[min(740px,calc(100dvh-180px))] lg:overflow-y-auto lg:border-r lg:border-b-0"
+              >
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <h2 className="text-xs font-semibold text-zinc-100">Capture sources</h2>
+                  <span className="text-[10px] text-zinc-500">{screenCount + windowCount} available</span>
+                </div>
+                <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-black/20 p-1">
                   <button
                     type="button"
                     onClick={() => changeKind('screen')}
@@ -571,7 +574,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                 </div>
 
                 {sourcesStatus === 'loading' && visibleSources.length === 0 ? (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
                     {[0, 1, 2, 3].map((item) => (
                       <div
                         key={item}
@@ -589,7 +592,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
                     {visibleSources.map((source) => (
                       <SourceCard
                         key={source.id}
@@ -600,10 +603,58 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
                     ))}
                   </div>
                 )}
+
               </section>
 
-              <aside className="lg:sticky lg:top-20 lg:self-start">
-                <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+              <section
+                aria-label="Recording preview"
+                className="flex min-h-[380px] min-w-0 flex-col gap-3 bg-canvas p-4 md:p-5 lg:min-h-0"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-300/70">
+                      Capture studio
+                    </p>
+                    <h2 className="mt-1 text-lg font-semibold tracking-tight text-zinc-100">
+                      Ready for your next take.
+                    </h2>
+                  </div>
+                  <span
+                    className={`rounded-full border px-2.5 py-1 text-[10px] ${
+                      screenReady && target
+                        ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
+                        : 'border-white/10 bg-white/[0.03] text-zinc-500'
+                    }`}
+                  >
+                    {screenReady && target ? 'Source connected' : 'Select a source'}
+                  </span>
+                </div>
+                <div className="flex min-h-[240px] flex-1 items-center justify-center">
+                  {target && screenReady ? (
+                    <SourcePreview key={target.id} target={target} />
+                  ) : (
+                    <div className="flex aspect-video w-full items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
+                      <p className="max-w-xs text-sm text-zinc-500">
+                        {screenReady
+                          ? 'Choose a display or window from Capture sources to see a live preview.'
+                          : 'Allow screen recording in System check to preview a source.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-zinc-400">
+                  <span className="min-w-0 truncate">
+                    {target ? `${target.kind === 'screen' ? 'Display' : 'Window'} · ${target.name}` : 'No source selected'}
+                  </span>
+                  <span className="shrink-0 text-zinc-500">Saved locally · No uploads</span>
+                </div>
+              </section>
+
+              <aside
+                aria-label="Capture settings"
+                className="min-w-0 border-t border-white/10 bg-panel lg:border-t-0 lg:border-l"
+              >
+                <div className="h-full bg-panel p-4 lg:p-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                     Capture settings
                   </p>
@@ -707,6 +758,7 @@ export function RecorderScreen({ onOpenSetup }: RecorderScreenProps): React.JSX.
 
                   <p className="mt-3 text-center text-[10px] text-zinc-600">{SHORTCUT_HINT}</p>
                 </div>
+
               </aside>
             </div>
           </>
