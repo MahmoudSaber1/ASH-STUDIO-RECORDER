@@ -33,7 +33,7 @@ function ToolButton({
       title={title ?? label}
       disabled={disabled}
       onClick={onClick}
-      className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 hover:bg-white/[0.07] disabled:opacity-35"
+      className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] font-medium text-zinc-300 hover:bg-white/[0.07] disabled:opacity-35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400"
     >
       {label}
     </button>
@@ -145,10 +145,10 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
   }
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-canvas text-zinc-100">
       <header
-        className={`sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-white/[0.04] bg-canvas/80 pr-5 backdrop-blur-xl [-webkit-app-region:drag] ${
-          platform === 'darwin' ? 'pl-24' : 'pl-5'
+        className={`sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-panel/95 pr-4 backdrop-blur-xl [-webkit-app-region:drag] ${
+          platform === 'darwin' ? 'pl-24' : 'pl-4'
         }`}
       >
         <div className="flex min-w-0 items-center gap-3 [-webkit-app-region:no-drag]">
@@ -157,52 +157,61 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
             onClick={() => {
               go({ name: 'library' })
             }}
-            className="rounded-lg px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200"
+            className="shrink-0 rounded-md px-2 py-1.5 text-xs text-zinc-400 hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400"
           >
             ← Projects
           </button>
-          {renaming !== null ? (
-            <form
-              onSubmit={(event) => {
-                event.preventDefault()
-                void renameProject(renaming).then(() => {
-                  setRenaming(null)
-                })
-              }}
-            >
-              <input
-                aria-label="Project name"
-                autoFocus
-                value={renaming}
-                onChange={(event) => {
-                  setRenaming(event.target.value)
+          <div className="min-w-0 border-l border-white/10 pl-3">
+            {renaming !== null ? (
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  void renameProject(renaming).then(() => {
+                    setRenaming(null)
+                  })
                 }}
-                onBlur={() => {
-                  setRenaming(null)
+              >
+                <input
+                  aria-label="Project name"
+                  autoFocus
+                  value={renaming}
+                  onChange={(event) => {
+                    setRenaming(event.target.value)
+                  }}
+                  onBlur={() => {
+                    setRenaming(null)
+                  }}
+                  className="w-52 max-w-full rounded-md border border-white/10 bg-black/30 px-2 py-1 text-sm text-zinc-100 outline-none focus-visible:border-brand-400"
+                />
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setRenaming(project.name)
                 }}
-                className="w-64 rounded-md border border-white/10 bg-black/30 px-2 py-1 text-sm text-zinc-100 outline-none"
-              />
-            </form>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setRenaming(project.name)
-              }}
-              title="Rename"
-              className="truncate text-sm font-semibold text-zinc-100 hover:text-white"
+                title="Rename"
+                className="block max-w-full truncate text-left text-sm font-semibold text-zinc-100 hover:text-white"
+              >
+                {project.name}
+              </button>
+            )}
+            <span
+              role="status"
+              className={`block truncate text-[10px] ${
+                saveStatus === 'error'
+                  ? 'text-rose-300'
+                  : saveStatus === 'saved'
+                    ? 'text-emerald-300/80'
+                    : 'text-zinc-500'
+              }`}
             >
-              {project.name}
-            </button>
-          )}
-          <span
-            className={`text-[11px] ${saveStatus === 'error' ? 'text-rose-300' : 'text-zinc-500'}`}
-          >
-            {SAVE_LABEL[saveStatus]}
-          </span>
+              {SAVE_LABEL[saveStatus]}
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 [-webkit-app-region:no-drag]">
+        <div className="flex shrink-0 items-center gap-2 [-webkit-app-region:no-drag]">
           <ToolButton label="Undo" onClick={undo} disabled={!canUndo} title="Undo (⌘Z)" />
           <ToolButton label="Redo" onClick={redo} disabled={!canRedo} title="Redo (⇧⌘Z)" />
           <button
@@ -210,45 +219,53 @@ export function EditorScreen({ projectKey }: { projectKey: string }): React.JSX.
             onClick={() => {
               setExportOpen(true)
             }}
-            className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-400"
+            className="rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-zinc-950 hover:bg-brand-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
           >
             Export
           </button>
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col gap-4 p-5 lg:flex-row">
-        <section className="flex min-w-0 flex-1 flex-col gap-4">
-          <div className="flex min-h-[320px] flex-1">
-            <Preview />
-          </div>
-
-          {/* Player controls sit centered under the preview; output length on the right. */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <span aria-hidden="true" />
-            <Transport />
-            <span className="justify-self-end text-[11px] text-zinc-500">
+      <main className="grid min-w-0 flex-1 grid-cols-1 lg:h-[calc(100dvh-3.5rem)] lg:min-h-[620px] lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section aria-label="Video editor workspace" className="flex min-h-[640px] min-w-0 flex-col lg:min-h-0">
+          <div className="flex min-h-[350px] min-w-0 flex-1 flex-col bg-canvas">
+            <div className="px-5 pt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/50">
+              Live output preview
+            </div>
+            <div className="flex min-h-[230px] min-w-0 flex-1 overflow-hidden px-4 pt-2 md:px-6">
+              <Preview />
+            </div>
+            <div className="flex shrink-0 items-center justify-center px-3 py-3">
+              <Transport />
+            </div>
+            <div className="shrink-0 pb-3 text-center text-[11px] text-zinc-500">
               Output {formatDuration(outputDuration)} · source {formatDuration(media.durationMs)}
-            </span>
+            </div>
           </div>
 
           {notice ? (
-            <p role="status" className="text-xs text-zinc-400">
+            <p role="status" className="border-t border-white/5 px-5 py-2 text-xs text-zinc-300">
               {notice}
             </p>
           ) : null}
 
-          <Timeline />
+          <section aria-label="Timeline workspace" className="min-w-0 shrink-0 border-t border-white/10 bg-panel px-3 py-3 md:px-5">
+            <div className="mb-2 flex items-center gap-3">
+              <h2 className="text-xs font-semibold text-zinc-100">Timeline</h2>
+              <span className="text-[11px] text-zinc-500">Clips · Speed · Zoom · Audio</span>
+            </div>
+            <Timeline />
+          </section>
         </section>
 
-        <div className="w-full lg:w-80">
+        <div className="min-h-[400px] min-w-0 border-t border-white/10 bg-panel lg:min-h-0 lg:border-t-0 lg:border-l">
           <Inspector
             hasWebcam={media.webcam !== null}
             hasMic={media.mic !== null}
             hasCursor={hasCursor}
           />
         </div>
-      </div>
+      </main>
 
       <ExportDialog />
     </div>
