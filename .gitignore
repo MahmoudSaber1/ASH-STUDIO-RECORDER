@@ -21,3 +21,8 @@ Thumbs.db
 test-results/
 playwright-report/
 e2e/.fixtures/
+
+# Generated assisted-NSIS artwork (recreated by npm run prebuild)
+build/installerSidebar.bmp
+build/uninstallerSidebar.bmp
+build/installerHeader.bmp
