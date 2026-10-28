@@ -104,8 +104,8 @@ export function Transport(): React.JSX.Element {
   const shownVolume = muted ? 0 : volume
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]">
-      <span className="min-w-[132px] font-mono text-sm tabular-nums text-zinc-100" aria-live="off">
+    <div className="flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]">
+      <span className="font-mono text-xs tabular-nums text-zinc-100 sm:text-sm" aria-live="off">
         {formatTimecode(playheadMs)}
         <span className="text-zinc-500"> / {formatTimecode(durationMs)}</span>
       </span>
@@ -171,7 +171,7 @@ export function Transport(): React.JSX.Element {
         </button>
       </div>
 
-      <div className="flex min-w-[132px] items-center gap-2">
+      <div className="flex items-center gap-2">
         <button
           type="button"
           aria-label={muted ? 'Unmute preview' : 'Mute preview'}
