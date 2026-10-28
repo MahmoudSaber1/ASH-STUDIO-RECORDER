@@ -56,6 +56,11 @@ win:
     - target: portable
       arch: [x64]
 nsis:
+  # Modern Light uses the native, accessible assisted wizard with branded
+  # 24-bit artwork. Directory and shortcut options remain unchanged.
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/uninstallerSidebar.bmp
+  installerHeader: build/installerHeader.bmp
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
